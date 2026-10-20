@@ -95,7 +95,14 @@
         }
         .questions-block { margin-bottom: 35px; }
         .questions-block h3 { color: #1f3a5f; margin-bottom: 10px; font-size: 18px; }
-        .q-row { display: flex; align-items: flex-start; gap: 10px; margin: 14px 0; font-size: 16px; flex-wrap: wrap; }
+        .q-row { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            margin: 14px 0; 
+            font-size: 16px; 
+            flex-wrap: wrap; 
+        }
         .q-row.current { 
             background-color: #eaf1fa; 
             padding: 10px 8px; 
@@ -116,6 +123,7 @@
             background: #fff;
             outline: none;
             text-align: center;
+            flex-shrink: 0;
         }
         .ans-box.filled { background: #f5f8ff; border-color: #1f3a5f; }
         .input-answer { 
@@ -125,6 +133,7 @@
             border-radius: 4px; 
             font-size: 16px; 
             background: #ffffff; 
+            flex-shrink: 0;
         }
         .input-answer:focus { outline: none; border-color: #1f3a5f; }
         .input-answer.filled { background-color: #f5f8ff; border-color: #1f3a5f; }
@@ -311,8 +320,22 @@
         .people-list { border: 1px solid #ddd; padding: 15px; margin: 15px 0; border-radius: 4px; background: #f9f9f9; }
         .people-list p { margin: 6px 0; font-size: 15px; }
         .summary-box { border: 1px solid #333; padding: 20px; margin-top: 15px; border-radius: 4px; background: #fff; }
-        .summary-box h4 { text-align: center; margin-bottom: 15px; color: #1f3a5f; font-size: 17px; }
-        .summary-row { margin: 12px 0; font-size: 16px; line-height: 1.8; }
+        .summary-box h4 { text-align: center; margin-bottom: 20px; color: #1f3a5f; font-size: 17px; }
+        .summary-text { font-size: 16px; line-height: 2; margin-bottom: 12px; }
+        .summary-line { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            margin: 10px 0; 
+            flex-wrap: wrap;
+        }
+        .blank-line {
+            display: inline-block;
+            border-bottom: 1px solid #333;
+            min-width: 160px;
+            margin: 0 8px;
+            vertical-align: bottom;
+        }
     </style>
 </head>
 <body>
@@ -455,27 +478,34 @@
                 
                 <div class="summary-box">
                     <h4>Mining the sea floor</h4>
-                    <p style="font-style:italic; margin-bottom:15px;">Mining corporations believe that the mineral resources lying under the sea may be superior to those found in the earth. They also say that these can be removed without producing much 24 .</p>
-                    <p style="font-style:italic; margin-bottom:15px;">The extraction is often done by adapting the 25  that has already been used to work on land. The method of excavation involves removing the seawater from the slurry that is brought up to ships and returning it to the seabed.</p>
-                    <p style="font-style:italic;">However, concerned groups strongly believe that 26  is necessary due to the possible number of unidentified consequences.</p>
                     
-                    <div class="summary-row">
+                    <p class="summary-text">
+                        Mining corporations believe that the mineral resources lying under the sea may be superior to those found in the earth. They also say that these can be removed without producing much
+                        <span class="blank-line"></span>
+                    </p>
+                    <div class="summary-line">
                         <span class="q-num">24</span>
-                        <span>without producing much</span>
                         <input type="text" class="input-answer" id="ans24" placeholder="ONE WORD">
                     </div>
                     
-                    <div class="summary-row">
+                    <p class="summary-text">
+                        The extraction is often done by adapting the
+                        <span class="blank-line"></span>
+                        that has already been used to work on land. The method of excavation involves removing the seawater from the slurry that is brought up to ships and returning it to the seabed.
+                    </p>
+                    <div class="summary-line">
                         <span class="q-num">25</span>
-                        <span>adapting the</span>
                         <input type="text" class="input-answer" id="ans25" placeholder="ONE WORD">
                     </div>
                     
-                    <div class="summary-row">
+                    <p class="summary-text">
+                        However, concerned groups strongly believe that
+                        <span class="blank-line"></span>
+                        is necessary due to the possible number of unidentified consequences.
+                    </p>
+                    <div class="summary-line">
                         <span class="q-num">26</span>
-                        <span>believe that</span>
                         <input type="text" class="input-answer" id="ans26" placeholder="ONE WORD">
-                        <span>is necessary</span>
                     </div>
                 </div>
             </div>
@@ -797,7 +827,7 @@ function saveAnswer(q, val) {
     updateStatus();
 }
 
-// ✅ Q14–23 — Letter answers, type freely, NO auto-replace
+// ✅ Q14–23 — Letter answers, aligned properly, NO auto-replace
 for (let q = 14; q <= 23; q++) {
     const box = document.getElementById(`ans${q}`);
     box.addEventListener('input', () => {
@@ -808,7 +838,7 @@ for (let q = 14; q <= 23; q++) {
     });
 }
 
-// ✅ Q24–26 — One-word answers, freely typed
+// ✅ Q24–26 — One-word answers, clean layout with blank lines
 for (let q = 24; q <= 26; q++) {
     const box = document.getElementById(`ans${q}`);
     box.addEventListener('input', () => {
