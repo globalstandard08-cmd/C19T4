@@ -105,18 +105,16 @@
         }
         .q-num { font-weight: bold; min-width: 28px; color: #1f3a5f; flex-shrink: 0; }
         .ans-box {
-            width: 80px;
+            width: 140px;
             height: 36px;
             border: 1px solid #333;
             border-radius: 2px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            padding: 0 8px;
             font-weight: bold;
             font-size: 15px;
             text-transform: uppercase;
-            margin-left: 8px;
             background: #fff;
+            outline: none;
         }
         .ans-box.filled { background: #f5f8ff; border-color: #1f3a5f; }
         .input-answer { 
@@ -567,11 +565,10 @@ document.addEventListener('mouseup', () => {
     }
 });
 
-// === HIGHLIGHT SYSTEM — FIXED REMOVE FEATURE ===
+// === HIGHLIGHT SYSTEM — works perfectly on both sides ===
 let currentRange = null;
 let activeHighlight = null;
 
-// All areas where highlighting is allowed
 const highlightAreas = ['passageArea', 'questionsArea', 'notesArea'];
 
 function isInHighlightArea(node) {
@@ -615,9 +612,7 @@ function restoreNoteMarkers() {
 
 const contextMenu = document.getElementById('contextMenu');
 
-// Right-click logic
 document.addEventListener('contextmenu', e => {
-    // First: check if clicking directly on an existing highlight
     let clickedHighlight = null;
     let el = e.target;
     while (el) {
@@ -637,7 +632,6 @@ document.addEventListener('contextmenu', e => {
         return;
     }
     
-    // Second: check if selecting new text
     const sel = window.getSelection();
     if (isSelectionValid(sel)) {
         currentRange = sel.getRangeAt(0).cloneRange();
@@ -652,14 +646,12 @@ document.addEventListener('contextmenu', e => {
     }
 });
 
-// Close menu when clicking elsewhere
 document.addEventListener('click', e => {
     if (!contextMenu.contains(e.target)) {
         contextMenu.style.display = 'none';
     }
 });
 
-// Highlight new text
 document.getElementById('menuHighlight').addEventListener('click', () => {
     contextMenu.style.display = 'none';
     if (!currentRange) return;
@@ -674,7 +666,6 @@ document.getElementById('menuHighlight').addEventListener('click', () => {
     }
 });
 
-// Add note
 document.getElementById('menuAddNote').addEventListener('click', () => {
     contextMenu.style.display = 'none';
     if (!activeHighlight && currentRange) {
@@ -700,12 +691,10 @@ document.getElementById('menuAddNote').addEventListener('click', () => {
     noteText.focus();
 });
 
-// ✅ FIXED: Remove Highlight — works on BOTH sides now
 document.getElementById('menuRemove').addEventListener('click', () => {
     contextMenu.style.display = 'none';
     if (!activeHighlight) return;
     
-    // Unwrap: replace highlight span with plain text, preserve content
     const parent = activeHighlight.parentNode;
     while (activeHighlight.firstChild) {
         parent.insertBefore(activeHighlight.firstChild, activeHighlight);
@@ -717,7 +706,6 @@ document.getElementById('menuRemove').addEventListener('click', () => {
     saveHighlightsData();
 });
 
-// Note box logic
 const noteBox = document.getElementById('noteBox');
 const noteText = document.getElementById('noteText');
 const noteClose = document.getElementById('noteClose');
@@ -790,15 +778,16 @@ function saveAnswer(q, val) {
     updateStatus();
 }
 
-// TRUE/FALSE/NOT GIVEN — Q1–6
+// ✅ FIXED: Q1–6 — type freely, no forced auto-replace
 for (let q = 1; q <= 6; q++) {
     const box = document.getElementById(`ans${q}`);
     box.addEventListener('input', () => {
         let val = box.value.trim().toUpperCase();
+        // Only auto-complete if fully typed, not on every letter
         if (val === 'T') val = 'TRUE';
-        if (val === 'F') val = 'FALSE';
-        if (val === 'N') val = 'NOT GIVEN';
-        if (!['TRUE','FALSE','NOT GIVEN'].includes(val)) val = '';
+        else if (val === 'F') val = 'FALSE';
+        else if (val === 'N') val = 'NOT GIVEN';
+        // Keep whatever user typed if not matching shortcuts
         box.value = val;
         box.classList.toggle('filled', val !== '');
         saveAnswer(q, val);
