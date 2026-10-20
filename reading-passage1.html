@@ -58,7 +58,7 @@
         .passage-text p { margin-bottom: 14px; text-align: justify; }
         .para-label { font-weight: bold; color: #1f3a5f; display: inline-block; min-width: 24px; }
         
-        /* DRAGGABLE DIVIDER — matches real IELTS */
+        /* DRAGGABLE DIVIDER */
         .divider {
             width: 12px;
             background-color: #e0e0e0;
@@ -130,10 +130,10 @@
         .input-answer:focus { outline: none; border-color: #1f3a5f; }
         .input-answer.filled { background-color: #f5f8ff; border-color: #1f3a5f; }
         
-        /* HIGHLIGHT + NOTE */
+        /* HIGHLIGHT — works on BOTH sides now */
         .highlight { 
             background-color: #ffd700; 
-            padding: 2px 4px; 
+            padding: 1px 3px; 
             border-radius: 2px; 
             cursor: pointer; 
             display: inline; 
@@ -296,7 +296,7 @@
         }
         .next-passage-btn:hover { background-color: #059669; }
         .clear-btn { 
-            background-color: #dc2626; 
+            background-color: #ef4444; 
             color: white; 
             border: none; 
             padding: 6px 12px; 
@@ -307,7 +307,7 @@
             white-space: nowrap; 
             flex-shrink: 0;
         }
-        .clear-btn:hover { background-color: #b91c1c; }
+        .clear-btn:hover { background-color: #dc2626; }
     </style>
 </head>
 <body>
@@ -315,7 +315,7 @@
     <div class="context-menu" id="contextMenu">
         <div id="menuHighlight">🖍️ Highlight</div>
         <div id="menuAddNote">📝 Add Note</div>
-        <div id="menuRemove">❌ Remove Highlight & Note</div>
+        <div id="menuRemove">❌ Remove Highlight</div>
     </div>
     
     <!-- Draggable Note Box -->
@@ -369,7 +369,7 @@
         <!-- RIGHT PANEL: QUESTIONS -->
         <div class="questions-pane" id="questionsPane">
             <!-- Questions 1–6 — TRUE/FALSE/NOT GIVEN -->
-            <div class="questions-block">
+            <div class="questions-block" id="questionsArea">
                 <h3>Questions 1–6</h3>
                 <div class="instruction">Do the following statements agree with the information given in Reading Passage 1?<br><br>In boxes 1–6 on your answer sheet, write:<br><br><strong>TRUE</strong> &nbsp;&nbsp;&nbsp;&nbsp;if the statement agrees with the information<br><strong>FALSE</strong> &nbsp;&nbsp;if the statement contradicts the information<br><strong>NOT GIVEN</strong> &nbsp;if there is no information on this</div>
                 
@@ -411,7 +411,7 @@
             </div>
             
             <!-- Questions 7–13 — Notes Completion -->
-            <div class="questions-block">
+            <div class="questions-block" id="notesArea">
                 <h3>Questions 7–13</h3>
                 <div class="instruction">Complete the notes below.<br>Choose <strong>ONE WORD ONLY</strong> from the passage for each answer.<br>Write your answers in boxes 7–13 on your answer sheet.</div>
                 
@@ -526,14 +526,13 @@
 const STORAGE_KEY = 'CambridgeTest_Reading';
 const passageId = 'reading-passage1';
 
-// === DRAGGABLE DIVIDER — matches real IELTS ===
+// === DRAGGABLE DIVIDER ===
 const divider = document.getElementById('divider');
 const passagePane = document.getElementById('passagePane');
 const questionsPane = document.getElementById('questionsPane');
 const MIN_WIDTH = 25;
 const MAX_WIDTH = 75;
 
-// Load saved position or default 50%
 let savedSplit = localStorage.getItem(`${STORAGE_KEY}_split`);
 let passagePercent = savedSplit ? parseFloat(savedSplit) : 50;
 
@@ -543,15 +542,15 @@ function applySplit() {
 }
 applySplit();
 
-let isDragging = false;
+let isDraggingDivider = false;
 divider.addEventListener('mousedown', (e) => {
-    isDragging = true;
+    isDraggingDivider = true;
     divider.classList.add('active');
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
 });
 document.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
+    if (!isDraggingDivider) return;
     const gridRect = document.getElementById('mainGrid').getBoundingClientRect();
     let newPercent = ((e.clientX - gridRect.left) / gridRect.width) * 100;
     newPercent = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, newPercent));
@@ -559,8 +558,8 @@ document.addEventListener('mousemove', (e) => {
     applySplit();
 });
 document.addEventListener('mouseup', () => {
-    if (isDragging) {
-        isDragging = false;
+    if (isDraggingDivider) {
+        isDraggingDivider = false;
         divider.classList.remove('active');
         document.body.style.cursor = '';
         document.body.style.userSelect = '';
@@ -568,9 +567,171 @@ document.addEventListener('mouseup', () => {
     }
 });
 
-// === ALL REMAINING CODE UNCHANGED ===
+// === HIGHLIGHT SYSTEM — NOW WORKS ON BOTH SIDES ===
 let currentRange = null;
 let activeHighlight = null;
+let lastSelection = null;
+
+// All areas where highlighting is allowed
+const highlightAreas = [
+    document.getElementById('passageArea'),
+    document.getElementById('questionsArea'),
+    document.getElementById('notesArea')
+];
+
+function isInHighlightArea(node) {
+    return highlightAreas.some(area => area && area.contains(node));
+}
+
+function isSelectionValid(sel) {
+    if (!sel || sel.isCollapsed || sel.toString().trim() === '') return false;
+    try {
+        const range = sel.getRangeAt(0);
+        return isInHighlightArea(range.commonAncestorContainer);
+    } catch { return false; }
+}
+
+function saveHighlightsData() {
+    const highlights = [];
+    document.querySelectorAll('.highlight').forEach((hl, idx) => {
+        highlights.push({
+            id: idx,
+            text: hl.textContent,
+            note: hl.getAttribute('data-note') || ''
+        });
+    });
+    localStorage.setItem(`${passageId}_highlights`, JSON.stringify(highlights));
+}
+
+function restoreNoteMarkers() {
+    document.querySelectorAll('.highlight').forEach(hl => {
+        if (hl.getAttribute('data-note') && !hl.querySelector('.note-marker')) {
+            const marker = document.createElement('span');
+            marker.className = 'note-marker';
+            marker.textContent = '!';
+            hl.appendChild(marker);
+        }
+    });
+}
+
+const contextMenu = document.getElementById('contextMenu');
+document.addEventListener('contextmenu', e => {
+    const sel = window.getSelection();
+    if (isSelectionValid(sel)) {
+        lastSelection = sel;
+        currentRange = sel.getRangeAt(0).cloneRange();
+        activeHighlight = null;
+        contextMenu.style.left = e.pageX + 'px';
+        contextMenu.style.top = e.pageY + 'px';
+        contextMenu.style.display = 'block';
+        e.preventDefault();
+    } else {
+        const target = e.target;
+        if (target.classList.contains('highlight') || target.closest('.highlight')) {
+            activeHighlight = target.classList.contains('highlight') ? target : target.closest('.highlight');
+            lastSelection = null;
+            contextMenu.style.left = e.pageX + 'px';
+            contextMenu.style.top = e.pageY + 'px';
+            contextMenu.style.display = 'block';
+            e.preventDefault();
+        } else {
+            contextMenu.style.display = 'none';
+        }
+    }
+});
+
+document.addEventListener('click', e => {
+    if (!contextMenu.contains(e.target)) {
+        contextMenu.style.display = 'none';
+    }
+});
+
+document.getElementById('menuHighlight').addEventListener('click', () => {
+    contextMenu.style.display = 'none';
+    if (!currentRange) return;
+    try {
+        const span = document.createElement('span');
+        span.className = 'highlight';
+        currentRange.surroundContents(span);
+        lastSelection.removeAllRanges();
+        saveHighlightsData();
+    } catch {}
+});
+
+document.getElementById('menuAddNote').addEventListener('click', () => {
+    contextMenu.style.display = 'none';
+    let targetHighlight = activeHighlight;
+    if (!targetHighlight && currentRange) {
+        try {
+            const span = document.createElement('span');
+            span.className = 'highlight';
+            currentRange.surroundContents(span);
+            targetHighlight = span;
+            lastSelection.removeAllRanges();
+            saveHighlightsData();
+        } catch { return; }
+    }
+    if (!targetHighlight) return;
+    activeHighlight = targetHighlight;
+    const rect = targetHighlight.getBoundingClientRect();
+    noteBox.style.left = (rect.right + 10) + 'px';
+    noteBox.style.top = rect.top + 'px';
+    noteBox.style.display = 'block';
+    noteText.value = targetHighlight.getAttribute('data-note') || '';
+    noteText.focus();
+});
+
+document.getElementById('menuRemove').addEventListener('click', () => {
+    contextMenu.style.display = 'none';
+    if (!activeHighlight) return;
+    const parent = activeHighlight.parentNode;
+    while (activeHighlight.firstChild) {
+        parent.insertBefore(activeHighlight.firstChild, activeHighlight);
+    }
+    parent.removeChild(activeHighlight);
+    parent.normalize();
+    activeHighlight = null;
+    saveHighlightsData();
+});
+
+// Note box drag
+const noteBox = document.getElementById('noteBox');
+const noteText = document.getElementById('noteText');
+const noteClose = document.getElementById('noteClose');
+
+noteClose.addEventListener('click', () => {
+    noteBox.style.display = 'none';
+    if (activeHighlight) {
+        activeHighlight.setAttribute('data-note', noteText.value);
+        if (noteText.value && !activeHighlight.querySelector('.note-marker')) {
+            const marker = document.createElement('span');
+            marker.className = 'note-marker';
+            marker.textContent = '!';
+            activeHighlight.appendChild(marker);
+        }
+        if (!noteText.value && activeHighlight.querySelector('.note-marker')) {
+            activeHighlight.querySelector('.note-marker').remove();
+        }
+        saveHighlightsData();
+    }
+    activeHighlight = null;
+});
+
+let isDraggingNote = false, noteOffsetX = 0, noteOffsetY = 0;
+document.getElementById('noteDragHandle').addEventListener('mousedown', e => {
+    isDraggingNote = true;
+    const rect = noteBox.getBoundingClientRect();
+    noteOffsetX = e.clientX - rect.left;
+    noteOffsetY = e.clientY - rect.top;
+});
+document.addEventListener('mousemove', e => {
+    if (!isDraggingNote) return;
+    noteBox.style.left = (e.clientX - noteOffsetX) + 'px';
+    noteBox.style.top = (e.clientY - noteOffsetY) + 'px';
+});
+document.addEventListener('mouseup', () => isDraggingNote = false);
+
+// === QUESTION NAVIGATION & ANSWERS ===
 let currentQuestionNum = 1;
 
 function setCurrentQuestion(qNum) {
@@ -601,150 +762,6 @@ document.querySelectorAll('.q-indicator').forEach(btn => {
     });
 });
 
-function isSelectionValid(sel) {
-    if (!sel || sel.isCollapsed || !sel.toString().trim()) return false;
-    try {
-        const r = sel.getRangeAt(0);
-        const p = r.commonAncestorContainer.nodeType === Node.TEXT_NODE
-            ? r.commonAncestorContainer.parentElement : r.commonAncestorContainer;
-        const inPassage = document.getElementById('passageArea').contains(p);
-        const inInput = p.closest('input,textarea,button,.context-menu,.note-box,.ans-box');
-        return inPassage && !inInput;
-    } catch { return false; }
-}
-
-function saveHighlightsData() {
-    const highlights = [];
-    document.querySelectorAll('.highlight').forEach((hl, idx) => {
-        highlights.push({
-            id: idx,
-            text: hl.textContent,
-            note: hl.getAttribute('data-note') || ''
-        });
-    });
-    localStorage.setItem(`${passageId}_highlights`, JSON.stringify(highlights));
-}
-
-function restoreNoteMarkers() {
-    document.querySelectorAll('.highlight').forEach(hl => {
-        if (hl.getAttribute('data-note') && !hl.querySelector('.note-marker')) {
-            const marker = document.createElement('span');
-            marker.className = 'note-marker';
-            marker.textContent = '!';
-            hl.appendChild(marker);
-        }
-    });
-}
-
-const noteBox = document.getElementById('noteBox');
-const noteText = document.getElementById('noteText');
-const noteClose = document.getElementById('noteClose');
-noteClose.addEventListener('click', () => { noteBox.style.display = 'none'; activeHighlight = null; });
-noteText.addEventListener('input', () => {
-    if (activeHighlight) {
-        activeHighlight.setAttribute('data-note', noteText.value);
-        if (noteText.value && !activeHighlight.querySelector('.note-marker')) {
-            const marker = document.createElement('span');
-            marker.className = 'note-marker';
-            marker.textContent = '!';
-            activeHighlight.appendChild(marker);
-        }
-        if (!noteText.value) {
-            const m = activeHighlight.querySelector('.note-marker');
-            if (m) m.remove();
-        }
-        saveHighlightsData();
-    }
-});
-
-let isDraggingNote = false, dragOffsetX = 0, dragOffsetY = 0;
-document.addEventListener('mousedown', e => {
-    if (!e.target.closest('.note-header')) return;
-    isDraggingNote = true;
-    const rc = noteBox.getBoundingClientRect();
-    dragOffsetX = e.clientX - rc.left;
-    dragOffsetY = e.clientY - rc.top;
-});
-document.addEventListener('mousemove', e => {
-    if (!isDraggingNote) return;
-    noteBox.style.left = (e.clientX - dragOffsetX) + 'px';
-    noteBox.style.top = (e.clientY - dragOffsetY) + 'px';
-});
-document.addEventListener('mouseup', () => isDraggingNote = false);
-
-const contextMenu = document.getElementById('contextMenu');
-document.addEventListener('contextmenu', e => {
-    const sel = window.getSelection();
-    const targetHl = e.target.closest('.highlight');
-    if (targetHl) {
-        e.preventDefault();
-        activeHighlight = targetHl;
-        const rc = targetHl.getBoundingClientRect();
-        contextMenu.style.left = (rc.left + window.scrollX) + 'px';
-        contextMenu.style.top = (rc.bottom + window.scrollY + 5) + 'px';
-        contextMenu.style.display = 'block';
-    } else if (isSelectionValid(sel)) {
-        e.preventDefault();
-        currentRange = sel.getRangeAt(0).cloneRange();
-        const rc = currentRange.getBoundingClientRect();
-        contextMenu.style.left = (rc.left + window.scrollX) + 'px';
-        contextMenu.style.top = (rc.bottom + window.scrollY + 5) + 'px';
-        contextMenu.style.display = 'block';
-        activeHighlight = null;
-    } else {
-        contextMenu.style.display = 'none';
-    }
-});
-document.addEventListener('click', e => { if (!contextMenu.contains(e.target)) contextMenu.style.display = 'none'; });
-
-document.getElementById('menuHighlight').addEventListener('click', () => {
-    if (!currentRange) return;
-    try {
-        const sp = document.createElement('span');
-        sp.className = 'highlight';
-        sp.textContent = currentRange.toString();
-        currentRange.deleteContents();
-        currentRange.insertNode(sp);
-        window.getSelection().removeAllRanges();
-        saveHighlightsData();
-    } catch { alert('⚠️ Select smaller text.'); }
-    contextMenu.style.display = 'none';
-});
-
-document.getElementById('menuAddNote').addEventListener('click', () => {
-    contextMenu.style.display = 'none';
-    if (!activeHighlight) {
-        if (!currentRange) return;
-        try {
-            const sp = document.createElement('span');
-            sp.className = 'highlight';
-            sp.textContent = currentRange.toString();
-            currentRange.deleteContents();
-            currentRange.insertNode(sp);
-            window.getSelection().removeAllRanges();
-            activeHighlight = sp;
-            saveHighlightsData();
-        } catch { alert('⚠️ Select smaller text.'); return; }
-    }
-    const rc = activeHighlight.getBoundingClientRect();
-    noteBox.style.left = (rc.right + window.scrollX + 10) + 'px';
-    noteBox.style.top = (rc.top + window.scrollY) + 'px';
-    noteBox.style.display = 'block';
-    noteText.value = activeHighlight.getAttribute('data-note') || '';
-    noteText.focus();
-});
-
-document.getElementById('menuRemove').addEventListener('click', () => {
-    contextMenu.style.display = 'none';
-    noteBox.style.display = 'none';
-    if (!activeHighlight) return;
-    const parent = activeHighlight.parentNode;
-    parent.replaceChild(document.createTextNode(activeHighlight.textContent), activeHighlight);
-    parent.normalize();
-    activeHighlight = null;
-    saveHighlightsData();
-});
-
 function saveAnswer(q, val) {
     localStorage.setItem(`${STORAGE_KEY}_q${q}`, val.trim());
     updateStatus();
@@ -755,11 +772,10 @@ for (let q = 1; q <= 6; q++) {
     const box = document.getElementById(`ans${q}`);
     box.addEventListener('input', () => {
         let val = box.value.trim().toUpperCase();
-        if (val.length > 1) val = val.substring(0, 1);
         if (val === 'T') val = 'TRUE';
         if (val === 'F') val = 'FALSE';
         if (val === 'N') val = 'NOT GIVEN';
-        if (!['TRUE','FALSE','NOT GIVEN','T','F','N'].includes(val)) val = '';
+        if (!['TRUE','FALSE','NOT GIVEN'].includes(val)) val = '';
         box.value = val;
         box.classList.toggle('filled', val !== '');
         saveAnswer(q, val);
@@ -785,10 +801,9 @@ function clearAllData() {
     document.querySelectorAll('input').forEach(i => { i.value = ''; i.classList.remove('filled'); });
     document.querySelectorAll('.highlight').forEach(hl => {
         const parent = hl.parentNode;
-        parent.replaceChild(document.createTextNode(hl.textContent), hl);
-        parent.normalize();
+        while (hl.firstChild) parent.insertBefore(hl.firstChild, hl);
+        parent.removeChild(hl);
     });
-    noteBox.style.display = 'none';
     location.reload();
 }
 document.getElementById('clearAllBtn').addEventListener('click', clearAllData);
@@ -796,6 +811,7 @@ document.getElementById('clearAllBtn').addEventListener('click', clearAllData);
 document.addEventListener('DOMContentLoaded', () => {
     restoreNoteMarkers();
     
+    // Load saved answers
     for (let q = 1; q <= 6; q++) {
         const box = document.getElementById(`ans${q}`);
         const saved = localStorage.getItem(`${STORAGE_KEY}_q${q}`) || '';
