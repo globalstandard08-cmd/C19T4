@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IELTS Reading — Passage 2</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
+        html, body { background-color: #ffffff; height: 100%; overflow-y: auto; }
+        
+        /* TOP BAR */
+        .top-bar { 
+            background-color: #ffffff; 
+            padding: 10px 25px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+            border-bottom: 1px solid #e5e5e5;
+        }
+        .logo { height: 55px; width: auto; }
+        
+        /* MAIN TWO-COLUMN LAYOUT — DRAGGABLE */
+        .main-grid { display: flex; min-height: calc(100vh - 75px - 48px); }
+        
+        /* LEFT: PASSAGE PANEL */
+        .passage-pane { 
+            width: calc(50% - 6px); 
+            background: #ffffff; 
+            overflow-y: auto; 
+            padding: 25px; 
+            max-height: calc(100vh - 75px - 48px); 
+            position: sticky; 
+            top: 75px; 
+        }
+        .exam-title {
+            text-align: center;
+            color: #1f3a5f;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #1f3a5f;
+        }
+        .instruction { 
+            background-color: #f9f9f9; 
+            border-left: 3px solid #1f3a5f; 
+            padding: 12px; 
+            margin-bottom: 18px; 
+            border-radius: 4px; 
+            font-weight: 500; 
+            font-size: 15px; 
+            line-height: 1.6;
+        }
+        .passage-text { font-size: 16px; line-height: 1.7; }
+        .passage-text p { margin-bottom: 14px; text-align: justify; }
+        .para-label { font-weight: bold; color: #1f3a5f; display: inline-block; min-width: 24px; }
+        
+        /* DRAGGABLE DIVIDER */
+        .divider {
+            width: 12px;
+            background-color: #e0e0e0;
+            cursor: col-resize;
+            flex-shrink: 0;
+            position: relative;
+            border-left: 1px solid #d0d0d0;
+            border-right: 1px solid #d0d0d0;
+        }
+        .divider:hover, .divider.active {
+            background-color: #b8b8b8;
+        }
+        .divider::after {
+            content: "⋮⋮";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #888;
+            font-size: 10px;
+            letter-spacing: -2px;
+            pointer-events: none;
+        }
+        
+        /* RIGHT: QUESTIONS PANEL */
+        .questions-pane { 
+            width: calc(50% - 6px); 
+            background: #ffffff; 
+            overflow-y: auto; 
+            padding: 25px; 
+            max-height: calc(100vh - 75px - 48px); 
+            position: sticky; 
+            top: 75px; 
+        }
+        .questions-block { margin-bottom: 35px; }
+        .questions-block h3 { color: #1f3a5f; margin-bottom: 10px; font-size: 18px; }
+        .q-row { display: flex; align-items: flex-start; gap: 10px; margin: 14px 0; font-size: 16px; flex-wrap: wrap; }
+        .q-row.current { 
+            background-color: #eaf1fa; 
+            padding: 10px 8px; 
+            border-radius: 4px;
+            margin-left: -8px;
+            margin-right: -8px;
+        }
+        .q-num { font-weight: bold; min-width: 28px; color: #1f3a5f; flex-shrink: 0; }
+        .ans-box {
+            width: 60px;
+            height: 36px;
+            border: 1px solid #333;
+            border-radius: 2px;
+            padding: 0 8px;
+            font-weight: bold;
+            font-size: 15px;
+            text-transform: uppercase;
+            background: #fff;
+            outline: none;
+            text-align: center;
+        }
+        .ans-box.filled { background: #f5f8ff; border-color: #1f3a5f; }
+        .input-answer { 
+            width: 140px; 
+            padding: 7px 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            font-size: 16px; 
+            background: #ffffff; 
+        }
+        .input-answer:focus { outline: none; border-color: #1f3a5f; }
+        .input-answer.filled { background-color: #f5f8ff; border-color: #1f3a5f; }
+        
+        /* HIGHLIGHT — works on BOTH sides */
+        .highlight { 
+            background-color: #ffd700; 
+            padding: 1px 3px; 
+            border-radius: 2px; 
+            cursor: pointer; 
+            display: inline; 
+            color: #000; 
+            position: relative; 
+        }
+        .note-marker { 
+            position: absolute; 
+            top: -8px; 
+            right: -8px; 
+            width: 18px; 
+            height: 18px; 
+            background: #1f3a5f; 
+            color: white; 
+            border-radius: 50%; 
+            font-size: 11px; 
+            font-weight: bold; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            z-index: 10; 
+        }
+        .context-menu { 
+            position: absolute; 
+            background: #ffffff; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1); 
+            z-index: 9999; 
+            display: none; 
+            min-width: 180px; 
+        }
+        .context-menu div { 
+            padding: 10px 14px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            border-bottom: 1px solid #f5f5f5; 
+        }
+        .context-menu div:last-child { border-bottom: none; }
+        .context-menu div:hover { background: #f5f5f5; }
+        
+        /* DRAGGABLE NOTE BOX */
+        .note-box { 
+            position: absolute; 
+            width: 260px; 
+            min-height: 80px; 
+            background: #fffde7; 
+            border: 1px solid #f9d423; 
+            border-radius: 6px; 
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1); 
+            z-index: 9990; 
+            display: none; 
+        }
+        .note-header { 
+            background: #f9d423; 
+            padding: 6px 10px; 
+            font-size: 13px; 
+            font-weight: bold; 
+            cursor: move; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            color: #333; 
+        }
+        .note-close { cursor: pointer; font-weight: bold; font-size: 16px; line-height: 1; }
+        .note-textarea { 
+            width: 100%; 
+            min-height: 60px; 
+            border: none; 
+            padding: 10px; 
+            font-size: 14px; 
+            resize: vertical; 
+            background: transparent; 
+            outline: none; 
+        }
+        
+        /* BOTTOM NAVIGATION */
+        .bottom-nav { 
+            min-height: 48px; 
+            background: #ffffff; 
+            border-top: 1px solid #eee; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            padding: 8px 15px; 
+            gap: 8px; 
+            overflow-x: auto;
+            overflow-y: hidden;
+            flex-wrap: nowrap;
+            position: sticky; 
+            bottom: 0; 
+            z-index: 90; 
+        }
+        .nav-group {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            flex-wrap: nowrap;
+        }
+        .part-label { 
+            font-size: 9px; 
+            font-weight: 600; 
+            color: #1f3a5f; 
+            margin: 0 4px; 
+            white-space: nowrap; 
+        }
+        .q-indicator { 
+            width: 24px; 
+            height: 24px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 3px; 
+            border: 1px solid #ddd; 
+            background: #fff; 
+            color: #333; 
+            font-size: 11px; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            flex-shrink: 0; 
+        }
+        .q-indicator:hover { border-color: #1f3a5f; }
+        .q-indicator.answered { 
+            background: #10b981 !important; 
+            color: white !important; 
+            border-color: #10b981 !important; 
+        }
+        .q-indicator.current { 
+            background-color: #eaf1fa; 
+            border-color: #1f3a5f;
+            border-width: 2px;
+            font-weight: bold;
+        }
+        
+        .back-btn {
+            padding: 6px 14px;
+            background-color: #6b7280;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: bold;
+            flex-shrink: 0;
+            text-decoration: none;
+        }
+        .back-btn:hover { background-color: #4b5563; }
+        .next-passage-btn {
+            padding: 6px 14px;
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: bold;
+            flex-shrink: 0;
+            text-decoration: none;
+        }
+        .next-passage-btn:hover { background-color: #059669; }
+        .clear-btn { 
+            background-color: #ef4444; 
+            color: white; 
+            border: none; 
+            padding: 6px 12px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            font-weight: bold; 
+            white-space: nowrap; 
+            flex-shrink: 0;
+        }
+        .clear-btn:hover { background-color: #dc2626; }
+        
+        .people-list { border: 1px solid #ddd; padding: 15px; margin: 15px 0; border-radius: 4px; background: #f9f9f9; }
+        .people-list p { margin: 6px 0; font-size: 15px; }
+        .summary-box { border: 1px solid #333; padding: 20px; margin-top: 15px; border-radius: 4px; background: #fff; }
+        .summary-box h4 { text-align: center; margin-bottom: 15px; color: #1f3a5f; font-size: 17px; }
+        .summary-row { margin: 12px 0; font-size: 16px; line-height: 1.8; }
+    </style>
+</head>
+<body>
+    <!-- Right-click Menu -->
+    <div class="context-menu" id="contextMenu">
+        <div id="menuHighlight">🖍️ Highlight</div>
+        <div id="menuAddNote">📝 Add Note</div>
+        <div id="menuRemove">❌ Remove Highlight</div>
+    </div>
+    
+    <!-- Draggable Note Box -->
+    <div class="note-box" id="noteBox">
+        <div class="note-header" id="noteDragHandle">
+            <span>📝 Note</span>
+            <span class="note-close" id="noteClose">×</span>
+        </div>
+        <textarea class="note-textarea" id="noteText" placeholder="Type your note here…"></textarea>
+    </div>
+    
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <img src="ielts-logo.png" alt="IELTS Logo" class="logo">
+    </div>
+    
+    <!-- MAIN CONTENT -->
+    <div class="main-grid" id="mainGrid">
+        <!-- LEFT PANEL: PASSAGE -->
+        <div class="passage-pane" id="passagePane">
+            <div class="exam-title">READING — CAMBRIDGE TEST</div>
+            
+            <h2>READING PASSAGE 2</h2>
+            <h3 style="color:#1f3a5f; margin:15px 0; font-size:22px; text-align:center;">Deep-sea mining</h3>
+            <p style="text-align:center; font-style:italic; margin-bottom:20px;">Bacteria from the ocean floor can beat superbugs and cancer. But habitats are at risk from the hunger for marine minerals</p>
+            
+            <div class="passage-text" id="passageArea">
+<p><span class="para-label">A</span> When Professor Mat Upton found that a microbe from a deep-sea sponge was killing pathogenic bugs in his laboratory, he realised it could be a breakthrough in the fight against antibiotic-resistant superbugs, which are responsible for thousands of deaths a year in the UK alone. Further tests confirmed that an antibiotic from the sponge bacteria, found living more than 700 metres under the sea at the Rockall trough in the north-east Atlantic, was previously unknown to science, boosting its potential as a life-saving medicine. But Upton, and other scientists who view the deep ocean and its wealth of unique and undocumented species as a prospecting ground for new medicines, fear such potential will be lost in the rush to exploit the deep sea's equally rich metal and mineral resources.</p>
+
+<p><span class="para-label">B</span> 'We're looking at the bioactive potential of marine resources, to see if there are any more medicines or drugs down there before we destroy it for ever,' says Upton, a medical microbiologist at the University of Plymouth. He is among many scientists urging a halt to deep-sea mining, asking for time to weigh up the pros and cons. 'In sustainability terms, this could be a better way of exploiting the economic potential of the deep sea,' he argues. Oceanographers using remotely operated vehicles have spotted many new species. Among them have been sea cucumbers with tails allowing them to sail along the ocean floor, and a rare 'Dumbo' octopus, found 3,000 metres under the Pacific Ocean, off the coast of California. Any one of these could offer life-saving potential. Upton estimates it could take up to a decade for a newly discovered antibiotic to become a medicine — but the race towards commercial mining in the ocean abyss has already begun.</p>
+
+<p><span class="para-label">C</span> The deep sea contains more nickel, cobalt and rare earth metals than all land reserves combined, according to the US Geological Survey. Mining corporations argue that deep-sea exploration could help diversify the supply of metals and point to the fact that demand for resources such as copper, aluminium, cobalt and tin for batteries and other materials used to power technology and smartphones, is soaring. They say that deep-sea mining could yield far superior ore to land mining with little, if any, waste. Different methods of extraction exist, but most involve employing some form of converted machinery previously used in terrestrial mining to excavate materials from the sea floor, at depths of up to 6,000 metres, then drawing a seawater slurry, containing rock and other solid particles, from the sea floor to ships on the surface. The slurry is then 'de-watered' and transferred to another vessel for shipping. Extracted seawater is pumped back down and discharged close to the sea floor.</p>
+
+<p><span class="para-label">D</span> But environmental and legal groups have urged caution, arguing there are potentially massive and unknown ramifications for the environment and for nearby communities, and that the global regulatory framework is not yet drafted. 'Despite arising in the last half century, the "new global gold rush" of deep-sea mining shares many features with past resource scrambles — including a general disregard for environmental and social impacts, and the marginalisation of indigenous peoples and their rights,' a paper, written by Julie Hunter, Julian Aguon, Blue Ocean Law, and Pradeep Singh, from the Center for Marine Environmental Studies, Bremen, argues. And they say that knowledge of the deep seabed remains extremely limited. 'The surface of the Moon, Mars and even Venus have all been mapped and studied in much greater detail, leading marine scientists to commonly remark that, with respect to the deep sea, "we don't yet know what we need to know".'</p>
+
+<p><span class="para-label">E</span> Scientific research — including a recent paper in Marine Policy journal — has suggested the deep seabed, and hydrothermal vents, which are created when seawater meets volcanic magma, have crucial impacts upon biodiversity and the global climate. The mineral-rich vents and their surrounds are also home to many well-known species including crustaceans, tube-worms, clams, anemones and fish. 'It is becoming increasingly clear that deep-sea mining poses a grave threat to these vital seafloor ecosystems,' the paper says. 'Extraction methods would produce large sediment plumes and involve the discharge of waste back into the ocean, significantly disturbing seafloor environments,' the paper continues. 'On deep sea vents, scientists are clear,' says Dr Jon Copley of the National Oceanography Centre, Southampton: 'we don't want mining on them.'</p>
+
+<p><span class="para-label">F</span> The oceans occupy around 70% of the planet and are relatively unexplored, says Mike Johnston, chief executive of Nautilus, a Canadian underwater exploration company: 'It makes sense to explore this untapped potential in an environmentally sustainable way, instead of continually looking at the fast depleting land reserves of the planet to meet society's rising needs.' Those leading the global rush to exploit giant mining machines thousands of metres below the sea surface say the environmental impact will be far lower than on land. But critics say exotic and little-known ecosystems in the deep oceans could be destroyed and must be protected. 'Mining will be the greatest assault on deep-sea ecosystems ever inflicted by humans,' according to hydrothermal vent expert Verena Tunnicliffe, at the University of Victoria in Canada. She argues that active vents must be off-limits for mining to protect the new knowledge and biotechnology spin-offs they can deliver, and that strict controls must be in place elsewhere.</p>
+            </div>
+        </div>
+        
+        <!-- DRAGGABLE DIVIDER -->
+        <div class="divider" id="divider"></div>
+        
+        <!-- RIGHT PANEL: QUESTIONS -->
+        <div class="questions-pane" id="questionsPane">
+            <!-- Questions 14–17 -->
+            <div class="questions-block" id="questionsArea">
+                <h3>Questions 14–17</h3>
+                <div class="instruction">Reading Passage 2 has six paragraphs, A–F.<br>Which paragraph contains the following information?<br>Write the correct letter, A–F, in boxes 14–17 on your answer sheet.</div>
+                
+                <div class="q-row" id="q14">
+                    <span class="q-num">14</span>
+                    <span>reference to the rapidly increasing need for one raw material in the transport industry</span>
+                    <input type="text" class="ans-box" id="ans14" placeholder="">
+                </div>
+                
+                <div class="q-row" id="q15">
+                    <span class="q-num">15</span>
+                    <span>a rough estimate of the area of the Earth covered by the oceans</span>
+                    <input type="text" class="ans-box" id="ans15" placeholder="">
+                </div>
+                
+                <div class="q-row" id="q16">
+                    <span class="q-num">16</span>
+                    <span>how a particular underwater habitat, where minerals and organisms co-exist, is formed</span>
+                    <input type="text" class="ans-box" id="ans16" placeholder="">
+                </div>
+                
+                <div class="q-row" id="q17">
+                    <span class="q-num">17</span>
+                    <span>reference to the fact that the countries of the world have yet to agree on rules for the exploration of the seabed</span>
+                    <input type="text" class="ans-box" id="ans17" placeholder="">
+                </div>
+            </div>
+            
+            <!-- Questions 18–23 -->
+            <div class="questions-block">
+                <h3>Questions 18–23</h3>
+                <div class="instruction">Look at the following statements (Questions 18–23) and the list of people below.<br>Match each statement with the correct person or people, A–E.<br>Write the correct letter, A–E, in boxes 18–23 on your answer sheet.<br><em>NB You may use any letter more than once.</em></div>
+                
+                <div class="people-list">
+                    <p><strong>List of People</strong></p>
+                    <p><strong>A</strong> &nbsp;Professor Mat Upton</p>
+                    <p><strong>B</strong> &nbsp;Julie Hunter, Julian Aguon and Pradeep Singh</p>
+                    <p><strong>C</strong> &nbsp;Dr Jon Copley</p>
+                    <p><strong>D</strong> &nbsp;Mike Johnston</p>
+                    <p><strong>E</strong> &nbsp;Verena Tunnicliffe</p>
+                </div>
+                
+                <div class="q-row" id="q18">
+                    <span class="q-num">18</span>
+                    <span>A move away from the heavily mined reserves on land is a good idea.</span>
+                    <input type="text" class="ans-box" id="ans18" placeholder="">
+                </div>
+                
+                <div class="q-row" id="q19">
+                    <span class="q-num">19</span>
+                    <span>The negative effects of undersea exploration on local areas and their inhabitants are being ignored.</span>
+                    <input type="text" class="ans-box" id="ans19" placeholder="">
+                </div>
+                
+                <div class="q-row" id="q20">
+                    <span class="q-num">20</span>
+                    <span>There are more worthwhile things to extract from the sea than minerals.</span>
+                    <input type="text" class="ans-box" id="ans20" placeholder="">
+                </div>
+                
+                <div class="q-row" id="q21">
+                    <span class="q-num">21</span>
+                    <span>No other form of human exploration will have such a destructive impact on marine life as deep-sea mining.</span>
+                    <input type="text" class="ans-box" id="ans21" placeholder="">
+                </div>
+                
+                <div class="q-row" id="q22">
+                    <span class="q-num">22</span>
+                    <span>More is known about outer space than about what lies beneath the oceans.</span>
+                    <input type="text" class="ans-box" id="ans22" placeholder="">
+                </div>
+                
+                <div class="q-row" id="q23">
+                    <span class="q-num">23</span>
+                    <span>There is one marine life habitat where experts agree mining should not take place.</span>
+                    <input type="text" class="ans-box" id="ans23" placeholder="">
+                </div>
+            </div>
+            
+            <!-- Questions 24–26 -->
+            <div class="questions-block">
+                <h3>Questions 24–26</h3>
+                <div class="instruction">Complete the summary below.<br>Choose <strong>ONE WORD ONLY</strong> from the passage for each answer.<br>Write your answers in boxes 24–26 on your answer sheet.</div>
+                
+                <div class="summary-box">
+                    <h4>Mining the sea floor</h4>
+                    <p style="font-style:italic; margin-bottom:15px;">Mining corporations believe that the mineral resources lying under the sea may be superior to those found in the earth. They also say that these can be removed without producing much 24 .</p>
+                    <p style="font-style:italic; margin-bottom:15px;">The extraction is often done by adapting the 25  that has already been used to work on land. The method of excavation involves removing the seawater from the slurry that is brought up to ships and returning it to the seabed.</p>
+                    <p style="font-style:italic;">However, concerned groups strongly believe that 26  is necessary due to the possible number of unidentified consequences.</p>
+                    
+                    <div class="summary-row">
+                        <span class="q-num">24</span>
+                        <span>without producing much</span>
+                        <input type="text" class="input-answer" id="ans24" placeholder="ONE WORD">
+                    </div>
+                    
+                    <div class="summary-row">
+                        <span class="q-num">25</span>
+                        <span>adapting the</span>
+                        <input type="text" class="input-answer" id="ans25" placeholder="ONE WORD">
+                    </div>
+                    
+                    <div class="summary-row">
+                        <span class="q-num">26</span>
+                        <span>believe that</span>
+                        <input type="text" class="input-answer" id="ans26" placeholder="ONE WORD">
+                        <span>is necessary</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- BOTTOM NAVIGATION -->
+    <div class="bottom-nav">
+        <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
+            <a href="reading-passage1.html" class="back-btn">← Back</a>
+            <button class="clear-btn" id="clearAllBtn">🗑️ Clear</button>
+        </div>
+        
+        <div class="nav-group">
+            <span class="part-label">P1:</span>
+            <div class="q-indicator" data-q="1">1</div>
+            <div class="q-indicator" data-q="2">2</div>
+            <div class="q-indicator" data-q="3">3</div>
+            <div class="q-indicator" data-q="4">4</div>
+            <div class="q-indicator" data-q="5">5</div>
+            <div class="q-indicator" data-q="6">6</div>
+            <div class="q-indicator" data-q="7">7</div>
+            <div class="q-indicator" data-q="8">8</div>
+            <div class="q-indicator" data-q="9">9</div>
+            <div class="q-indicator" data-q="10">10</div>
+            <div class="q-indicator" data-q="11">11</div>
+            <div class="q-indicator" data-q="12">12</div>
+            <div class="q-indicator" data-q="13">13</div>
+            
+            <span class="part-label">P2:</span>
+            <div class="q-indicator current" data-q="14">14</div>
+            <div class="q-indicator" data-q="15">15</div>
+            <div class="q-indicator" data-q="16">16</div>
+            <div class="q-indicator" data-q="17">17</div>
+            <div class="q-indicator" data-q="18">18</div>
+            <div class="q-indicator" data-q="19">19</div>
+            <div class="q-indicator" data-q="20">20</div>
+            <div class="q-indicator" data-q="21">21</div>
+            <div class="q-indicator" data-q="22">22</div>
+            <div class="q-indicator" data-q="23">23</div>
+            <div class="q-indicator" data-q="24">24</div>
+            <div class="q-indicator" data-q="25">25</div>
+            <div class="q-indicator" data-q="26">26</div>
+            
+            <span class="part-label">P3:</span>
+            <div class="q-indicator" data-q="27">27</div>
+            <div class="q-indicator" data-q="28">28</div>
+            <div class="q-indicator" data-q="29">29</div>
+            <div class="q-indicator" data-q="30">30</div>
+            <div class="q-indicator" data-q="31">31</div>
+            <div class="q-indicator" data-q="32">32</div>
+            <div class="q-indicator" data-q="33">33</div>
+            <div class="q-indicator" data-q="34">34</div>
+            <div class="q-indicator" data-q="35">35</div>
+            <div class="q-indicator" data-q="36">36</div>
+            <div class="q-indicator" data-q="37">37</div>
+            <div class="q-indicator" data-q="38">38</div>
+            <div class="q-indicator" data-q="39">39</div>
+            <div class="q-indicator" data-q="40">40</div>
+        </div>
+        
+        <a href="reading-passage3.html" class="next-passage-btn">Next →</a>
+    </div>
+<script>
+const STORAGE_KEY = 'CambridgeTest_Reading';
+const passageId = 'reading-passage2';
+
+// === DRAGGABLE DIVIDER ===
+const divider = document.getElementById('divider');
+const passagePane = document.getElementById('passagePane');
+const questionsPane = document.getElementById('questionsPane');
+const MIN_WIDTH = 25;
+const MAX_WIDTH = 75;
+
+let savedSplit = localStorage.getItem(`${STORAGE_KEY}_split`);
+let passagePercent = savedSplit ? parseFloat(savedSplit) : 50;
+
+function applySplit() {
+    passagePane.style.width = `calc(${passagePercent}% - 6px)`;
+    questionsPane.style.width = `calc(${100 - passagePercent}% - 6px)`;
+}
+applySplit();
+
+let isDraggingDivider = false;
+divider.addEventListener('mousedown', (e) => {
+    isDraggingDivider = true;
+    divider.classList.add('active');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+});
+document.addEventListener('mousemove', (e) => {
+    if (!isDraggingDivider) return;
+    const gridRect = document.getElementById('mainGrid').getBoundingClientRect();
+    let newPercent = ((e.clientX - gridRect.left) / gridRect.width) * 100;
+    newPercent = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, newPercent));
+    passagePercent = newPercent;
+    applySplit();
+});
+document.addEventListener('mouseup', () => {
+    if (isDraggingDivider) {
+        isDraggingDivider = false;
+        divider.classList.remove('active');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        localStorage.setItem(`${STORAGE_KEY}_split`, passagePercent);
+    }
+});
+
+// === HIGHLIGHT SYSTEM ===
+let currentRange = null;
+let activeHighlight = null;
+
+const highlightAreas = ['passageArea', 'questionsArea'];
+
+function isInHighlightArea(node) {
+    for (const id of highlightAreas) {
+        const area = document.getElementById(id);
+        if (area && area.contains(node)) return true;
+    }
+    return false;
+}
+
+function isSelectionValid(sel) {
+    if (!sel || sel.isCollapsed || sel.toString().trim() === '') return false;
+    try {
+        const range = sel.getRangeAt(0);
+        return isInHighlightArea(range.commonAncestorContainer);
+    } catch { return false; }
+}
+
+function saveHighlightsData() {
+    const highlights = [];
+    document.querySelectorAll('.highlight').forEach((hl, idx) => {
+        highlights.push({
+            id: idx,
+            text: hl.textContent,
+            note: hl.getAttribute('data-note') || ''
+        });
+    });
+    localStorage.setItem(`${passageId}_highlights`, JSON.stringify(highlights));
+}
+
+function restoreNoteMarkers() {
+    document.querySelectorAll('.highlight').forEach(hl => {
+        if (hl.getAttribute('data-note') && !hl.querySelector('.note-marker')) {
+            const marker = document.createElement('span');
+            marker.className = 'note-marker';
+            marker.textContent = '!';
+            hl.appendChild(marker);
+        }
+    });
+}
+
+const contextMenu = document.getElementById('contextMenu');
+
+document.addEventListener('contextmenu', e => {
+    let clickedHighlight = null;
+    let el = e.target;
+    while (el) {
+        if (el.classList && el.classList.contains('highlight')) {
+            clickedHighlight = el;
+            break;
+        }
+        el = el.parentElement;
+    }
+    
+    if (clickedHighlight) {
+        activeHighlight = clickedHighlight;
+        contextMenu.style.left = e.pageX + 'px';
+        contextMenu.style.top = e.pageY + 'px';
+        contextMenu.style.display = 'block';
+        e.preventDefault();
+        return;
+    }
+    
+    const sel = window.getSelection();
+    if (isSelectionValid(sel)) {
+        currentRange = sel.getRangeAt(0).cloneRange();
+        activeHighlight = null;
+        contextMenu.style.left = e.pageX + 'px';
+        contextMenu.style.top = e.pageY + 'px';
+        contextMenu.style.display = 'block';
+        e.preventDefault();
+    } else {
+        contextMenu.style.display = 'none';
+        activeHighlight = null;
+    }
+});
+
+document.addEventListener('click', e => {
+    if (!contextMenu.contains(e.target)) {
+        contextMenu.style.display = 'none';
+    }
+});
+
+document.getElementById('menuHighlight').addEventListener('click', () => {
+    contextMenu.style.display = 'none';
+    if (!currentRange) return;
+    try {
+        const span = document.createElement('span');
+        span.className = 'highlight';
+        currentRange.surroundContents(span);
+        window.getSelection().removeAllRanges();
+        saveHighlightsData();
+    } catch {
+        alert('⚠️ Please select smaller sections of text.');
+    }
+});
+
+document.getElementById('menuAddNote').addEventListener('click', () => {
+    contextMenu.style.display = 'none';
+    if (!activeHighlight && currentRange) {
+        try {
+            const span = document.createElement('span');
+            span.className = 'highlight';
+            currentRange.surroundContents(span);
+            activeHighlight = span;
+            window.getSelection().removeAllRanges();
+            saveHighlightsData();
+        } catch {
+            alert('⚠️ Please select smaller sections of text.');
+            return;
+        }
+    }
+    if (!activeHighlight) return;
+    
+    const rect = activeHighlight.getBoundingClientRect();
+    noteBox.style.left = (rect.right + 10) + 'px';
+    noteBox.style.top = rect.top + 'px';
+    noteBox.style.display = 'block';
+    noteText.value = activeHighlight.getAttribute('data-note') || '';
+    noteText.focus();
+});
+
+document.getElementById('menuRemove').addEventListener('click', () => {
+    contextMenu.style.display = 'none';
+    if (!activeHighlight) return;
+    
+    const parent = activeHighlight.parentNode;
+    while (activeHighlight.firstChild) {
+        parent.insertBefore(activeHighlight.firstChild, activeHighlight);
+    }
+    parent.removeChild(activeHighlight);
+    parent.normalize();
+    
+    activeHighlight = null;
+    saveHighlightsData();
+});
+
+const noteBox = document.getElementById('noteBox');
+const noteText = document.getElementById('noteText');
+const noteClose = document.getElementById('noteClose');
+
+noteClose.addEventListener('click', () => {
+    if (activeHighlight) {
+        activeHighlight.setAttribute('data-note', noteText.value);
+        if (noteText.value && !activeHighlight.querySelector('.note-marker')) {
+            const marker = document.createElement('span');
+            marker.className = 'note-marker';
+            marker.textContent = '!';
+            activeHighlight.appendChild(marker);
+        }
+        if (!noteText.value && activeHighlight.querySelector('.note-marker')) {
+            activeHighlight.querySelector('.note-marker').remove();
+        }
+        saveHighlightsData();
+    }
+    noteBox.style.display = 'none';
+    activeHighlight = null;
+});
+
+let isDraggingNote = false, noteOffsetX = 0, noteOffsetY = 0;
+document.getElementById('noteDragHandle').addEventListener('mousedown', e => {
+    isDraggingNote = true;
+    const rect = noteBox.getBoundingClientRect();
+    noteOffsetX = e.clientX - rect.left;
+    noteOffsetY = e.clientY - rect.top;
+});
+document.addEventListener('mousemove', e => {
+    if (!isDraggingNote) return;
+    noteBox.style.left = (e.clientX - noteOffsetX) + 'px';
+    noteBox.style.top = (e.clientY - noteOffsetY) + 'px';
+});
+document.addEventListener('mouseup', () => isDraggingNote = false);
+
+// === QUESTION NAVIGATION & ANSWERS ===
+let currentQuestionNum = 14;
+
+function setCurrentQuestion(qNum) {
+    document.querySelectorAll('.q-row.current').forEach(r => r.classList.remove('current'));
+    document.querySelectorAll('.q-indicator.current').forEach(b => b.classList.remove('current'));
+    currentQuestionNum = qNum;
+    const row = document.getElementById(`q${qNum}`);
+    const indicator = document.querySelector(`.q-indicator[data-q="${qNum}"]`);
+    if (row) row.classList.add('current');
+    if (indicator) indicator.classList.add('current');
+}
+
+function updateStatus() {
+    for (let q = 1; q <= 40; q++) {
+        const btn = document.querySelector(`.q-indicator[data-q="${q}"]`);
+        if (!btn) continue;
+        const val = localStorage.getItem(`${STORAGE_KEY}_q${q}`) || '';
+        btn.classList.toggle('answered', val.trim().length > 0);
+    }
+}
+
+document.querySelectorAll('.q-indicator').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const qNum = parseInt(btn.dataset.q);
+        setCurrentQuestion(qNum);
+        const target = document.getElementById(`q${qNum}`);
+        if (target) target.scrollIntoView({behavior:'smooth', block:'center'});
+    });
+});
+
+function saveAnswer(q, val) {
+    localStorage.setItem(`${STORAGE_KEY}_q${q}`, val.trim());
+    updateStatus();
+}
+
+// ✅ Q14–23 — Letter answers, type freely, NO auto-replace
+for (let q = 14; q <= 23; q++) {
+    const box = document.getElementById(`ans${q}`);
+    box.addEventListener('input', () => {
+        const val = box.value.toUpperCase();
+        box.value = val;
+        box.classList.toggle('filled', val.trim() !== '');
+        saveAnswer(q, val);
+    });
+}
+
+// ✅ Q24–26 — One-word answers, freely typed
+for (let q = 24; q <= 26; q++) {
+    const box = document.getElementById(`ans${q}`);
+    box.addEventListener('input', () => {
+        const val = box.value.trim().replace(/[^a-zA-Z]/g, '').toLowerCase();
+        box.value = val;
+        box.classList.toggle('filled', val !== '');
+        saveAnswer(q, val);
+    });
+}
+
+function clearAllData() {
+    if (!confirm('⚠️ Are you sure you want to clear ALL answers, highlights, and notes? This cannot be undone.')) return;
+    for (let q = 1; q <= 40; q++) localStorage.removeItem(`${STORAGE_KEY}_q${q}`);
+    localStorage.removeItem(`${passageId}_highlights`);
+    localStorage.removeItem(`${STORAGE_KEY}_split`);
+    document.querySelectorAll('input').forEach(i => { i.value = ''; i.classList.remove('filled'); });
+    document.querySelectorAll('.highlight').forEach(hl => {
+        const parent = hl.parentNode;
+        while (hl.firstChild) parent.insertBefore(hl.firstChild, hl);
+        parent.removeChild(hl);
+    });
+    location.reload();
+}
+document.getElementById('clearAllBtn').addEventListener('click', clearAllData);
+
+document.addEventListener('DOMContentLoaded', () => {
+    restoreNoteMarkers();
+    
+    // Load saved answers
+    for (let q = 14; q <= 23; q++) {
+        const box = document.getElementById(`ans${q}`);
+        const saved = localStorage.getItem(`${STORAGE_KEY}_q${q}`) || '';
+        if (saved) { box.value = saved; box.classList.add('filled'); }
+    }
+    for (let q = 24; q <= 26; q++) {
+        const box = document.getElementById(`ans${q}`);
+        const saved = localStorage.getItem(`${STORAGE_KEY}_q${q}`) || '';
+        if (saved) { box.value = saved; box.classList.add('filled'); }
+    }
+    
+    setCurrentQuestion(14);
+    updateStatus();
+});
+</script>
+</body>
+</html>
