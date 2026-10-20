@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IELTS Reading — Passage 1</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
+        html, body { background-color: #ffffff; height: 100%; overflow-y: auto; }
+        
+        /* TOP BAR */
+        .top-bar { 
+            background-color: #ffffff; 
+            padding: 10px 25px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+            border-bottom: 1px solid #e5e5e5;
+        }
+        .logo { height: 55px; width: auto; }
+        
+        /* MAIN TWO-COLUMN LAYOUT */
+        .main-grid { display: flex; min-height: calc(100vh - 75px - 48px); gap: 2px; }
+        
+        /* LEFT: PASSAGE PANEL */
+        .passage-pane { 
+            width: 50%; 
+            background: #ffffff; 
+            overflow-y: auto; 
+            padding: 25px; 
+            border-right: 1px solid #eee; 
+            max-height: calc(100vh - 75px - 48px); 
+            position: sticky; 
+            top: 75px; 
+        }
+        .exam-title {
+            text-align: center;
+            color: #1f3a5f;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #1f3a5f;
+        }
+        .instruction { 
+            background-color: #f9f9f9; 
+            border-left: 3px solid #1f3a5f; 
+            padding: 12px; 
+            margin-bottom: 18px; 
+            border-radius: 4px; 
+            font-weight: 500; 
+            font-size: 15px; 
+            line-height: 1.6;
+        }
+        .passage-text { font-size: 16px; line-height: 1.7; }
+        .passage-text p { margin-bottom: 14px; text-align: justify; }
+        .para-label { font-weight: bold; color: #1f3a5f; display: inline-block; min-width: 24px; }
+        
+        /* RIGHT: QUESTIONS PANEL */
+        .questions-pane { 
+            width: 50%; 
+            background: #ffffff; 
+            overflow-y: auto; 
+            padding: 25px; 
+            max-height: calc(100vh - 75px - 48px); 
+            position: sticky; 
+            top: 75px; 
+        }
+        .questions-block { margin-bottom: 35px; }
+        .questions-block h3 { color: #1f3a5f; margin-bottom: 10px; font-size: 18px; }
+        .q-row { display: flex; align-items: flex-start; gap: 10px; margin: 14px 0; font-size: 16px; flex-wrap: wrap; }
+        .q-row.current { 
+            background-color: #eaf1fa; 
+            padding: 10px 8px; 
+            border-radius: 4px;
+            margin-left: -8px;
+            margin-right: -8px;
+        }
+        .q-num { font-weight: bold; min-width: 28px; color: #1f3a5f; flex-shrink: 0; }
+        .ans-box {
+            width: 80px;
+            height: 36px;
+            border: 1px solid #333;
+            border-radius: 2px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 15px;
+            text-transform: uppercase;
+            margin-left: 8px;
+            background: #fff;
+        }
+        .ans-box.filled { background: #f5f8ff; border-color: #1f3a5f; }
+        .input-answer { 
+            width: 220px; 
+            padding: 7px 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            font-size: 16px; 
+            background: #ffffff; 
+        }
+        .input-answer:focus { outline: none; border-color: #1f3a5f; }
+        .input-answer.filled { background-color: #f5f8ff; border-color: #1f3a5f; }
+        
+        /* HIGHLIGHT + NOTE */
+        .highlight { 
+            background-color: #ffd700; 
+            padding: 2px 4px; 
+            border-radius: 2px; 
+            cursor: pointer; 
+            display: inline; 
+            color: #000; 
+            position: relative; 
+        }
+        .note-marker { 
+            position: absolute; 
+            top: -8px; 
+            right: -8px; 
+            width: 18px; 
+            height: 18px; 
+            background: #1f3a5f; 
+            color: white; 
+            border-radius: 50%; 
+            font-size: 11px; 
+            font-weight: bold; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            z-index: 10; 
+        }
+        .context-menu { 
+            position: absolute; 
+            background: #ffffff; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1); 
+            z-index: 9999; 
+            display: none; 
+            min-width: 180px; 
+        }
+        .context-menu div { 
+            padding: 10px 14px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            border-bottom: 1px solid #f5f5f5; 
+        }
+        .context-menu div:last-child { border-bottom: none; }
+        .context-menu div:hover { background: #f5f5f5; }
+        
+        /* DRAGGABLE NOTE BOX */
+        .note-box { 
+            position: absolute; 
+            width: 260px; 
+            min-height: 80px; 
+            background: #fffde7; 
+            border: 1px solid #f9d423; 
+            border-radius: 6px; 
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1); 
+            z-index: 9990; 
+            display: none; 
+        }
+        .note-header { 
+            background: #f9d423; 
+            padding: 6px 10px; 
+            font-size: 13px; 
+            font-weight: bold; 
+            cursor: move; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            color: #333; 
+        }
+        .note-close { cursor: pointer; font-weight: bold; font-size: 16px; line-height: 1; }
+        .note-textarea { 
+            width: 100%; 
+            min-height: 60px; 
+            border: none; 
+            padding: 10px; 
+            font-size: 14px; 
+            resize: vertical; 
+            background: transparent; 
+            outline: none; 
+        }
+        
+        /* BOTTOM NAVIGATION */
+        .bottom-nav { 
+            min-height: 48px; 
+            background: #ffffff; 
+            border-top: 1px solid #eee; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            padding: 8px 15px; 
+            gap: 8px; 
+            overflow-x: auto;
+            overflow-y: hidden;
+            flex-wrap: nowrap;
+            position: sticky; 
+            bottom: 0; 
+            z-index: 90; 
+        }
+        .nav-group {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            flex-wrap: nowrap;
+        }
+        .part-label { 
+            font-size: 9px; 
+            font-weight: 600; 
+            color: #1f3a5f; 
+            margin: 0 4px; 
+            white-space: nowrap; 
+        }
+        .q-indicator { 
+            width: 24px; 
+            height: 24px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 3px; 
+            border: 1px solid #ddd; 
+            background: #fff; 
+            color: #333; 
+            font-size: 11px; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            flex-shrink: 0; 
+        }
+        .q-indicator:hover { border-color: #1f3a5f; }
+        .q-indicator.answered { 
+            background: #10b981 !important; 
+            color: white !important; 
+            border-color: #10b981 !important; 
+        }
+        .q-indicator.current { 
+            background-color: #eaf1fa; 
+            border-color: #1f3a5f;
+            border-width: 2px;
+            font-weight: bold;
+        }
+        
+        .back-btn {
+            padding: 6px 14px;
+            background-color: #6b7280;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: bold;
+            flex-shrink: 0;
+            text-decoration: none;
+        }
+        .back-btn:hover { background-color: #4b5563; }
+        .next-passage-btn {
+            padding: 6px 14px;
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: bold;
+            flex-shrink: 0;
+            text-decoration: none;
+        }
+        .next-passage-btn:hover { background-color: #059669; }
+        .clear-btn { 
+            background-color: #dc2626; 
+            color: white; 
+            border: none; 
+            padding: 6px 12px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            font-weight: bold; 
+            white-space: nowrap; 
+            flex-shrink: 0;
+        }
+        .clear-btn:hover { background-color: #b91c1c; }
+    </style>
+</head>
+<body>
+    <!-- Right-click Menu -->
+    <div class="context-menu" id="contextMenu">
+        <div id="menuHighlight">🖍️ Highlight</div>
+        <div id="menuAddNote">📝 Add Note</div>
+        <div id="menuRemove">❌ Remove Highlight & Note</div>
+    </div>
+    
+    <!-- Draggable Note Box -->
+    <div class="note-box" id="noteBox">
+        <div class="note-header" id="noteDragHandle">
+            <span>📝 Note</span>
+            <span class="note-close" id="noteClose">×</span>
+        </div>
+        <textarea class="note-textarea" id="noteText" placeholder="Type your note here…"></textarea>
+    </div>
+    
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <img src="ielts-logo.png" alt="IELTS Logo" class="logo">
+    </div>
+    
+    <!-- MAIN CONTENT -->
+    <div class="main-grid">
+        <!-- LEFT PANEL: PASSAGE -->
+        <div class="passage-pane" id="passageArea">
+            <div class="exam-title">READING — CAMBRIDGE TEST</div>
+            
+            <h2>READING PASSAGE 1</h2>
+            <div class="instruction">You should spend about 20 minutes on Questions 1–13, which are based on Reading Passage 1 below.</div>
+            <h3 style="color:#1f3a5f; margin:15px 0; font-size:22px; text-align:center;">The impact of climate change on butterflies in Britain</h3>
+            
+            <div class="passage-text">
+<p>According to conservationists, populations of around two thirds of butterfly species have declined in Britain over the past 40 years. If this trend continues, it might have unpredictable knock-on effects for other species in the ecosystem. Butterfly eggs develop into caterpillars and these insects, which are the second stage in a new butterfly's lifecycle, consume vast quantities of plant material, and in turn act as prey for birds as well as bats and other small mammals. Only by arming themselves with an understanding of why butterfly numbers are down can conservationists hope to halt or reverse the decline.</p>
+
+<p>Butterflies prefer outdoor conditions to be 'just right', which means neither too hot nor too cold. Under the conditions of climate change, the temperature at any given time in summer is generally getting warmer, leaving butterflies with the challenge of how to deal with this. One of the main ways in which species are ensuring conditions suit them is by changing the time of year at which they are active and reproduce. Scientists refer to the timing of such lifecycle events as 'phenology', so when an animal or plant starts to do something earlier in the year than it usually does, it is said to be 'advancing its phenology'.</p>
+
+<p>These advances have been observed already in a wide range of butterflies — indeed, most species are advancing their phenology to some extent. In Britain, as the average spring temperature has increased by roughly 0.5 °C over the past 20 years, species have advanced by between three days and a week on average. To keep in line with cooler temperatures. This is a sign that butterflies are well equipped to cope with climate change, and readily adjust to new temperatures? Or are these populations under stress, being dragged along unwillingly by unnaturally fast changes? The answer is still unknown, but a new study is seeking to answer these questions.</p>
+
+<p>First, the researchers pulled together data from millions of records that had been submitted by butterfly enthusiasts — people who spend their free time observing the activities of different species. This provided information on 130 species of butterflies in Great Britain every year for a 20-year period. They then estimated the abundance and distribution of each species across this period, along with how far north in the country they had moved. The data also, crucially, allowed researchers to estimate subtle changes in what time of the year each species was changing into an adult butterfly.</p>
+
+<p>Analysing the trends in each variable, the researchers discovered that species with more flexible lifecycles were more likely to be able to benefit from an earlier emergence driven by climate change. Some species are able to go from caterpillar to butterfly twice or more per year, so that the individual butterflies you see flying in the spring are the grandchildren or great-grandchildren of the individuals seen a year previously.</p>
+
+<p>Among these species, researchers observed that those which have been advancing their phenology the most over the 20-year study period also had the most positive trends in abundance, distribution and northwards extent. For these species, such as Britain's tiniest butterfly, the Small Blue, whose colonies are up to a hundred strong, some develop into butterflies early in spring, allowing their summer generations to complete another reproductive cycle by autumn so that more population growth occurs.</p>
+
+<p>Other species, however, are less flexible and restricted to a single reproductive cycle per year. For these species, there was no evidence of any benefit to emerging earlier. Indeed, worryingly, it was found that the species in this group that specialise in very specific habitat types, often related to the caterpillar's preferred diet, actually tended to be most at harm from advancing phenology. It is in this group, often described as Britain's most endangered butterfly, which is found only in coppiced woodland and limestone pavement habitats. It is also a single-generation butterfly that has advanced its phenology. This suggests that climate change, while undoubtedly not the sole cause, might have played a part in the downfall of this species.</p>
+
+<p>All is not lost, however. Many of Britain's single-generation species show the capacity, in continental Europe, to add a second generation where they are sufficiently warm. Therefore, as the climate continues to warm, species like the Silver-studded Blue might be able to switch to multiple generations in the UK as well, and so begin to extract benefits from the additional warmth, potentially leading to population increases.</p>
+
+<p>More immediately, conservationists can arm themselves with all this knowledge to spot the warning signs of species that may be at risk. The White Admiral of southern England, a much sought-after butterfly, experienced a significant increase in numbers from the 1920s but has shown a considerable decline in the past 20 years. This may be because the caterpillar exists solely on a diet of a plant called honeysuckle. But it is also likely to be due to climate change.</p>
+            </div>
+        </div>
+        
+        <!-- RIGHT PANEL: QUESTIONS -->
+        <div class="questions-pane" id="questionsArea">
+            <!-- Questions 1–6 — TRUE/FALSE/NOT GIVEN -->
+            <div class="questions-block">
+                <h3>Questions 1–6</h3>
+                <div class="instruction">Do the following statements agree with the information given in Reading Passage 1?<br><br>In boxes 1–6 on your answer sheet, write:<br><br><strong>TRUE</strong> &nbsp;&nbsp;&nbsp;&nbsp;if the statement agrees with the information<br><strong>FALSE</strong> &nbsp;&nbsp;if the statement contradicts the information<br><strong>NOT GIVEN</strong> &nbsp;if there is no information on this</div>
+                
+                <div class="q-row" id="q1">
+                    <span class="q-num">1</span>
+                    <span>Forty years ago, there were fewer butterflies in Britain than at present.</span>
+                    <input type="text" class="ans-box" id="ans1" placeholder="">
+                </div>
+                
+                <div class="q-row" id="q2">
+                    <span class="q-num">2</span>
+                    <span>Caterpillars are eaten by a number of different predators.</span>
+                    <input type="text" class="ans-box" id="ans2" placeholder="">
+                </div>
+                
+                <div class="q-row" id="q3">
+                    <span class="q-num">3</span>
+                    <span>'Phenology' is a term used to describe a creature's ability to alter the location of a lifecycle event.</span>
+                    <input type="text" class="ans-box" id="ans3" placeholder="">
+                </div>
+                
+                <div class="q-row" id="q4">
+                    <span class="q-num">4</span>
+                    <span>Some species of butterfly have a reduced lifespan due to spring temperature increases.</span>
+                    <input type="text" class="ans-box" id="ans4" placeholder="">
+                </div>
+                
+                <div class="q-row" id="q5">
+                    <span class="q-num">5</span>
+                    <span>There is a clear reason for the adaptations that butterflies are making to climate change.</span>
+                    <input type="text" class="ans-box" id="ans5" placeholder="">
+                </div>
+                
+                <div class="q-row" id="q6">
+                    <span class="q-num">6</span>
+                    <span>The data used in the study was taken from the work of amateur butterfly watchers.</span>
+                    <input type="text" class="ans-box" id="ans6" placeholder="">
+                </div>
+            </div>
+            
+            <!-- Questions 7–13 — Notes Completion -->
+            <div class="questions-block">
+                <h3>Questions 7–13</h3>
+                <div class="instruction">Complete the notes below.<br>Choose <strong>ONE WORD ONLY</strong> from the passage for each answer.<br>Write your answers in boxes 7–13 on your answer sheet.</div>
+                
+                <h4 style="margin:12px 0 8px; color:#1f3a5f;">Butterflies in the UK</h4>
+                
+                <div class="q-row" id="q7">
+                    <span class="q-num">7</span>
+                    <span>The Small Blue: lives in large</span>
+                    <input type="text" class="input-answer" id="ans7" placeholder="ONE WORD">
+                </div>
+                
+                <div class="q-row" id="q8">
+                    <span class="q-num">8</span>
+                    <span>first appears at the start of</span>
+                    <input type="text" class="input-answer" id="ans8" placeholder="ONE WORD">
+                </div>
+                
+                <div class="q-row" id="q9">
+                    <span class="q-num">9</span>
+                    <span>The High Brown Fritillary: is considered to be more</span>
+                    <input type="text" class="input-answer" id="ans9" placeholder="ONE WORD">
+                    <span>than other species</span>
+                </div>
+                
+                <div class="q-row" id="q10">
+                    <span class="q-num">10</span>
+                    <span>its caterpillars occupy a limited range of</span>
+                    <input type="text" class="input-answer" id="ans10" placeholder="ONE WORD">
+                </div>
+                
+                <div class="q-row" id="q11">
+                    <span class="q-num">11</span>
+                    <span>The Silver-studded Blue: is already able to reproduce twice a year in warm areas of</span>
+                    <input type="text" class="input-answer" id="ans11" placeholder="ONE WORD">
+                </div>
+                
+                <div class="q-row" id="q12">
+                    <span class="q-num">12</span>
+                    <span>The White Admiral: is found in</span>
+                    <input type="text" class="input-answer" id="ans12" placeholder="ONE WORD">
+                    <span>areas of England</span>
+                </div>
+                
+                <div class="q-row" id="q13">
+                    <span class="q-num">13</span>
+                    <span>both climate change and the</span>
+                    <input type="text" class="input-answer" id="ans13" placeholder="ONE WORD">
+                    <span>of the caterpillar are possible reasons for decline</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- BOTTOM NAVIGATION -->
+    <div class="bottom-nav">
+        <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
+            <a href="reading-intro.html" class="back-btn">← Back</a>
+            <button class="clear-btn" id="clearAllBtn">🗑️ Clear</button>
+        </div>
+        
+        <div class="nav-group">
+            <span class="part-label">P1:</span>
+            <div class="q-indicator current" data-q="1">1</div>
+            <div class="q-indicator" data-q="2">2</div>
+            <div class="q-indicator" data-q="3">3</div>
+            <div class="q-indicator" data-q="4">4</div>
+            <div class="q-indicator" data-q="5">5</div>
+            <div class="q-indicator" data-q="6">6</div>
+            <div class="q-indicator" data-q="7">7</div>
+            <div class="q-indicator" data-q="8">8</div>
+            <div class="q-indicator" data-q="9">9</div>
+            <div class="q-indicator" data-q="10">10</div>
+            <div class="q-indicator" data-q="11">11</div>
+            <div class="q-indicator" data-q="12">12</div>
+            <div class="q-indicator" data-q="13">13</div>
+            
+            <span class="part-label">P2:</span>
+            <div class="q-indicator" data-q="14">14</div>
+            <div class="q-indicator" data-q="15">15</div>
+            <div class="q-indicator" data-q="16">16</div>
+            <div class="q-indicator" data-q="17">17</div>
+            <div class="q-indicator" data-q="18">18</div>
+            <div class="q-indicator" data-q="19">19</div>
+            <div class="q-indicator" data-q="20">20</div>
+            <div class="q-indicator" data-q="21">21</div>
+            <div class="q-indicator" data-q="22">22</div>
+            <div class="q-indicator" data-q="23">23</div>
+            <div class="q-indicator" data-q="24">24</div>
+            <div class="q-indicator" data-q="25">25</div>
+            <div class="q-indicator" data-q="26">26</div>
+            
+            <span class="part-label">P3:</span>
+            <div class="q-indicator" data-q="27">27</div>
+            <div class="q-indicator" data-q="28">28</div>
+            <div class="q-indicator" data-q="29">29</div>
+            <div class="q-indicator" data-q="30">30</div>
+            <div class="q-indicator" data-q="31">31</div>
+            <div class="q-indicator" data-q="32">32</div>
+            <div class="q-indicator" data-q="33">33</div>
+            <div class="q-indicator" data-q="34">34</div>
+            <div class="q-indicator" data-q="35">35</div>
+            <div class="q-indicator" data-q="36">36</div>
+            <div class="q-indicator" data-q="37">37</div>
+            <div class="q-indicator" data-q="38">38</div>
+            <div class="q-indicator" data-q="39">39</div>
+            <div class="q-indicator" data-q="40">40</div>
+        </div>
+        
+        <a href="reading-passage2.html" class="next-passage-btn">Next →</a>
+    </div>
+<script>
+const STORAGE_KEY = 'CambridgeTest_Reading';
+const passageId = 'reading-passage1';
+let currentRange = null;
+let activeHighlight = null;
+let currentQuestionNum = 1;
+
+function setCurrentQuestion(qNum) {
+    document.querySelectorAll('.q-row.current').forEach(r => r.classList.remove('current'));
+    document.querySelectorAll('.q-indicator.current').forEach(b => b.classList.remove('current'));
+    currentQuestionNum = qNum;
+    const row = document.getElementById(`q${qNum}`);
+    const indicator = document.querySelector(`.q-indicator[data-q="${qNum}"]`);
+    if (row) row.classList.add('current');
+    if (indicator) indicator.classList.add('current');
+}
+
+function updateStatus() {
+    for (let q = 1; q <= 40; q++) {
+        const btn = document.querySelector(`.q-indicator[data-q="${q}"]`);
+        if (!btn) continue;
+        const val = localStorage.getItem(`${STORAGE_KEY}_q${q}`) || '';
+        btn.classList.toggle('answered', val.trim().length > 0);
+    }
+}
+
+document.querySelectorAll('.q-indicator').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const qNum = parseInt(btn.dataset.q);
+        setCurrentQuestion(qNum);
+        const target = document.getElementById(`q${qNum}`);
+        if (target) target.scrollIntoView({behavior:'smooth', block:'center'});
+    });
+});
+
+function isSelectionValid(sel) {
+    if (!sel || sel.isCollapsed || !sel.toString().trim()) return false;
+    try {
+        const r = sel.getRangeAt(0);
+        const p = r.commonAncestorContainer.nodeType === Node.TEXT_NODE
+            ? r.commonAncestorContainer.parentElement : r.commonAncestorContainer;
+        const inPassage = document.getElementById('passageArea').contains(p);
+        const inInput = p.closest('input,textarea,button,.context-menu,.note-box,.ans-box');
+        return inPassage && !inInput;
+    } catch { return false; }
+}
+
+function saveHighlightsData() {
+    const highlights = [];
+    document.querySelectorAll('.highlight').forEach((hl, idx) => {
+        highlights.push({
+            id: idx,
+            text: hl.textContent,
+            note: hl.getAttribute('data-note') || ''
+        });
+    });
+    localStorage.setItem(`${passageId}_highlights`, JSON.stringify(highlights));
+}
+
+function restoreNoteMarkers() {
+    document.querySelectorAll('.highlight').forEach(hl => {
+        if (hl.getAttribute('data-note') && !hl.querySelector('.note-marker')) {
+            const marker = document.createElement('span');
+            marker.className = 'note-marker';
+            marker.textContent = '!';
+            hl.appendChild(marker);
+        }
+    });
+}
+
+const noteBox = document.getElementById('noteBox');
+const noteText = document.getElementById('noteText');
+const noteClose = document.getElementById('noteClose');
+noteClose.addEventListener('click', () => { noteBox.style.display = 'none'; activeHighlight = null; });
+noteText.addEventListener('input', () => {
+    if (activeHighlight) {
+        activeHighlight.setAttribute('data-note', noteText.value);
+        if (noteText.value && !activeHighlight.querySelector('.note-marker')) {
+            const marker = document.createElement('span');
+            marker.className = 'note-marker';
+            marker.textContent = '!';
+            activeHighlight.appendChild(marker);
+        }
+        if (!noteText.value) {
+            const m = activeHighlight.querySelector('.note-marker');
+            if (m) m.remove();
+        }
+        saveHighlightsData();
+    }
+});
+
+let isDraggingNote = false, dragOffsetX = 0, dragOffsetY = 0;
+document.addEventListener('mousedown', e => {
+    if (!e.target.closest('.note-header')) return;
+    isDraggingNote = true;
+    const rc = noteBox.getBoundingClientRect();
+    dragOffsetX = e.clientX - rc.left;
+    dragOffsetY = e.clientY - rc.top;
+});
+document.addEventListener('mousemove', e => {
+    if (!isDraggingNote) return;
+    noteBox.style.left = (e.clientX - dragOffsetX) + 'px';
+    noteBox.style.top = (e.clientY - dragOffsetY) + 'px';
+});
+document.addEventListener('mouseup', () => isDraggingNote = false);
+
+const contextMenu = document.getElementById('contextMenu');
+document.addEventListener('contextmenu', e => {
+    const sel = window.getSelection();
+    const targetHl = e.target.closest('.highlight');
+    if (targetHl) {
+        e.preventDefault();
+        activeHighlight = targetHl;
+        const rc = targetHl.getBoundingClientRect();
+        contextMenu.style.left = (rc.left + window.scrollX) + 'px';
+        contextMenu.style.top = (rc.bottom + window.scrollY + 5) + 'px';
+        contextMenu.style.display = 'block';
+    } else if (isSelectionValid(sel)) {
+        e.preventDefault();
+        currentRange = sel.getRangeAt(0).cloneRange();
+        const rc = currentRange.getBoundingClientRect();
+        contextMenu.style.left = (rc.left + window.scrollX) + 'px';
+        contextMenu.style.top = (rc.bottom + window.scrollY + 5) + 'px';
+        contextMenu.style.display = 'block';
+        activeHighlight = null;
+    } else {
+        contextMenu.style.display = 'none';
+    }
+});
+document.addEventListener('click', e => { if (!contextMenu.contains(e.target)) contextMenu.style.display = 'none'; });
+
+document.getElementById('menuHighlight').addEventListener('click', () => {
+    if (!currentRange) return;
+    try {
+        const sp = document.createElement('span');
+        sp.className = 'highlight';
+        sp.textContent = currentRange.toString();
+        currentRange.deleteContents();
+        currentRange.insertNode(sp);
+        window.getSelection().removeAllRanges();
+        saveHighlightsData();
+    } catch { alert('⚠️ Select smaller text.'); }
+    contextMenu.style.display = 'none';
+});
+
+document.getElementById('menuAddNote').addEventListener('click', () => {
+    contextMenu.style.display = 'none';
+    if (!activeHighlight) {
+        if (!currentRange) return;
+        try {
+            const sp = document.createElement('span');
+            sp.className = 'highlight';
+            sp.textContent = currentRange.toString();
+            currentRange.deleteContents();
+            currentRange.insertNode(sp);
+            window.getSelection().removeAllRanges();
+            activeHighlight = sp;
+            saveHighlightsData();
+        } catch { alert('⚠️ Select smaller text.'); return; }
+    }
+    const rc = activeHighlight.getBoundingClientRect();
+    noteBox.style.left = (rc.right + window.scrollX + 10) + 'px';
+    noteBox.style.top = (rc.top + window.scrollY) + 'px';
+    noteBox.style.display = 'block';
+    noteText.value = activeHighlight.getAttribute('data-note') || '';
+    noteText.focus();
+});
+
+document.getElementById('menuRemove').addEventListener('click', () => {
+    contextMenu.style.display = 'none';
+    noteBox.style.display = 'none';
+    if (!activeHighlight) return;
+    const parent = activeHighlight.parentNode;
+    parent.replaceChild(document.createTextNode(activeHighlight.textContent), activeHighlight);
+    parent.normalize();
+    activeHighlight = null;
+    saveHighlightsData();
+});
+
+function saveAnswer(q, val) {
+    localStorage.setItem(`${STORAGE_KEY}_q${q}`, val.trim());
+    updateStatus();
+}
+
+// TRUE/FALSE/NOT GIVEN — Q1–6
+for (let q = 1; q <= 6; q++) {
+    const box = document.getElementById(`ans${q}`);
+    box.addEventListener('input', () => {
+        let val = box.value.trim().toUpperCase();
+        if (val.length > 1) val = val.substring(0, 1);
+        if (val && !['T','F','N','TRUE','FALSE','NOT GIVEN'].includes(val) && !['TRUE','FALSE','NOT GIVEN'].includes(val)) {
+            if (!['T','F','N'].includes(val)) val = '';
+        }
+        if (val === 'T') val = 'TRUE';
+        if (val === 'F') val = 'FALSE';
+        if (val === 'N') val = 'NOT GIVEN';
+        box.value = val;
+        box.classList.toggle('filled', val !== '');
+        saveAnswer(q, val);
+    });
+}
+
+// Notes Completion — Q7–13
+for (let q = 7; q <= 13; q++) {
+    const box = document.getElementById(`ans${q}`);
+    box.addEventListener('input', () => {
+        const val = box.value.trim().replace(/[^a-zA-Z]/g, '').toLowerCase();
+        box.value = val;
+        box.classList.toggle('filled', val !== '');
+        saveAnswer(q, val);
+    });
+}
+
+function clearAllData() {
+    if (!confirm('⚠️ Are you sure you want to clear ALL answers, highlights, and notes? This cannot be undone.')) return;
+    for (let q = 1; q <= 40; q++) localStorage.removeItem(`${STORAGE_KEY}_q${q}`);
+    localStorage.removeItem(`${passageId}_highlights`);
+    document.querySelectorAll('input').forEach(i => { i.value = ''; i.classList.remove('filled'); });
+    document.querySelectorAll('.highlight').forEach(hl => {
+        const parent = hl.parentNode;
+        parent.replaceChild(document.createTextNode(hl.textContent), hl);
+        parent.normalize();
+    });
+    noteBox.style.display = 'none';
+    location.reload();
+}
+document.getElementById('clearAllBtn').addEventListener('click', clearAllData);
+
+document.addEventListener('DOMContentLoaded', () => {
+    restoreNoteMarkers();
+    
+    // Restore answers Q1–6
+    for (let q = 1; q <= 6; q++) {
+        const box = document.getElementById(`ans${q}`);
+        const saved = localStorage.getItem(`${STORAGE_KEY}_q${q}`) || '';
+        if (saved) {
+            box.value = saved;
+            box.classList.add('filled');
+        }
+    }
+    
+    // Restore answers Q7–13
+    for (let q = 7; q <= 13; q++) {
+        const box = document.getElementById(`ans${q}`);
+        const saved = localStorage.getItem(`${STORAGE_KEY}_q${q}`) || '';
+        if (saved) {
+            box.value = saved;
+            box.classList.add('filled');
+        }
+    }
+    
+    setCurrentQuestion(1);
+    updateStatus();
+});
+</script>
+</body>
+</html>
