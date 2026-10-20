@@ -173,7 +173,6 @@
     <p>• Location of HR office: on <span class="q-num">5.</span> <input type="text" class="input-field" data-q="5"> floor</p>
     <p>• Supervisor's mobile number: <span class="q-num">6.</span> <input type="text" class="input-field" data-q="6"></p>
 </div>
-
 <div class="instruction"><strong>Questions 7–10</strong><br>Complete the table below.<br>Write <strong>ONE WORD ONLY</strong> for each answer.</div>
 <table>
     <tr><th colspan="4">Responsibilities</th></tr>
@@ -197,7 +196,6 @@
         <td>Must wear special <span class="q-num">10.</span> <input type="text" class="input-field" data-q="10"></td>
     </tr>
 </table>
-
 <!-- ========== NAV AT BOTTOM ========== -->
 <div class="question-status">
     <span class="part-label">Part 1</span>
@@ -211,7 +209,8 @@
         </div><!-- /content -->
     </div><!-- /container -->
 <script>
-const STORAGE_KEY = 'Listening_FirstDayAtWork';
+// ✅ UPDATED: Exact match for Cambridge 19 Test 4
+const STORAGE_KEY = 'Cambridge19_Test4_Listening';
 const passageId = 'listening-first-day-at-work';
 let currentRange = null;
 let activeHighlight = null;
@@ -224,7 +223,6 @@ function updateStatus() {
         btn.classList.toggle('answered', val.length > 0);
     }
 }
-
 function saveHighlights() {
     const highlights = document.querySelectorAll('#passageArea .highlight');
     const data = Array.from(highlights).map(h => ({
@@ -233,7 +231,6 @@ function saveHighlights() {
     }));
     localStorage.setItem(`${passageId}_highlights`, JSON.stringify(data));
 }
-
 function isSelectionValid(sel) {
     if (!sel || sel.isCollapsed || !sel.toString().trim()) return false;
     try {
@@ -245,24 +242,20 @@ function isSelectionValid(sel) {
         return inArea && !inInput;
     } catch { return false; }
 }
-
 const noteBox = document.getElementById('noteBox');
 const noteText = document.getElementById('noteText');
 const noteClose = document.getElementById('noteClose');
 let isDraggingNote = false, offsetX = 0, offsetY = 0;
-
 noteClose.addEventListener('click', () => {
     noteBox.style.display = 'none';
     activeHighlight = null;
 });
-
 noteText.addEventListener('input', () => {
     if (activeHighlight) {
         activeHighlight.setAttribute('data-note', noteText.value);
         saveHighlights();
     }
 });
-
 document.addEventListener('mousedown', e => {
     if (!e.target.closest('.note-header')) return;
     isDraggingNote = true;
@@ -270,15 +263,12 @@ document.addEventListener('mousedown', e => {
     offsetX = e.clientX - rc.left;
     offsetY = e.clientY - rc.top;
 });
-
 document.addEventListener('mousemove', e => {
     if (!isDraggingNote) return;
     noteBox.style.left = (e.clientX - offsetX) + 'px';
     noteBox.style.top = (e.clientY - offsetY) + 'px';
 });
-
 document.addEventListener('mouseup', () => isDraggingNote = false);
-
 const ctxMenu = document.getElementById('contextMenu');
 document.addEventListener('contextmenu', e => {
     const sel = window.getSelection();
@@ -302,11 +292,9 @@ document.addEventListener('contextmenu', e => {
         activeHighlight = null;
     }
 });
-
 document.addEventListener('click', e => {
     if (!ctxMenu.contains(e.target)) ctxMenu.style.display = 'none';
 });
-
 document.getElementById('menuHighlight').addEventListener('click', () => {
     if (!currentRange) return;
     try {
@@ -320,7 +308,6 @@ document.getElementById('menuHighlight').addEventListener('click', () => {
     } catch { alert('⚠️ Select smaller text please.'); }
     ctxMenu.style.display = 'none';
 });
-
 document.getElementById('menuAddNote').addEventListener('click', () => {
     ctxMenu.style.display = 'none';
     if (!activeHighlight) {
@@ -349,7 +336,6 @@ document.getElementById('menuAddNote').addEventListener('click', () => {
     noteText.value = activeHighlight.getAttribute('data-note') || '';
     noteText.focus();
 });
-
 document.getElementById('menuRemove').addEventListener('click', () => {
     ctxMenu.style.display = 'none';
     noteBox.style.display = 'none';
@@ -362,12 +348,10 @@ document.getElementById('menuRemove').addEventListener('click', () => {
     activeHighlight = null;
     saveHighlights();
 });
-
 function saveAnswer(q, val) {
     localStorage.setItem(`${STORAGE_KEY}_q${q}`, val);
     updateStatus();
 }
-
 function clearAll() {
     if (!confirm('⚠️ Clear all answers and highlights? This cannot be undone.')) return;
     for (let q = 1; q <= 10; q++) localStorage.removeItem(`${STORAGE_KEY}_q${q}`);
@@ -380,7 +364,6 @@ function clearAll() {
     noteBox.style.display = 'none';
     updateStatus();
 }
-
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.input-field').forEach(inp => {
         const q = inp.dataset.q;
