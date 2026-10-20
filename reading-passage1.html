@@ -130,7 +130,7 @@
         .input-answer:focus { outline: none; border-color: #1f3a5f; }
         .input-answer.filled { background-color: #f5f8ff; border-color: #1f3a5f; }
         
-        /* HIGHLIGHT — works on BOTH sides now */
+        /* HIGHLIGHT — works on BOTH sides */
         .highlight { 
             background-color: #ffd700; 
             padding: 1px 3px; 
@@ -567,20 +567,19 @@ document.addEventListener('mouseup', () => {
     }
 });
 
-// === HIGHLIGHT SYSTEM — NOW WORKS ON BOTH SIDES ===
+// === HIGHLIGHT SYSTEM — FIXED REMOVE FEATURE ===
 let currentRange = null;
 let activeHighlight = null;
-let lastSelection = null;
 
 // All areas where highlighting is allowed
-const highlightAreas = [
-    document.getElementById('passageArea'),
-    document.getElementById('questionsArea'),
-    document.getElementById('notesArea')
-];
+const highlightAreas = ['passageArea', 'questionsArea', 'notesArea'];
 
 function isInHighlightArea(node) {
-    return highlightAreas.some(area => area && area.contains(node));
+    for (const id of highlightAreas) {
+        const area = document.getElementById(id);
+        if (area && area.contains(node)) return true;
+    }
+    return false;
 }
 
 function isSelectionValid(sel) {
@@ -615,10 +614,32 @@ function restoreNoteMarkers() {
 }
 
 const contextMenu = document.getElementById('contextMenu');
+
+// Right-click logic
 document.addEventListener('contextmenu', e => {
+    // First: check if clicking directly on an existing highlight
+    let clickedHighlight = null;
+    let el = e.target;
+    while (el) {
+        if (el.classList && el.classList.contains('highlight')) {
+            clickedHighlight = el;
+            break;
+        }
+        el = el.parentElement;
+    }
+    
+    if (clickedHighlight) {
+        activeHighlight = clickedHighlight;
+        contextMenu.style.left = e.pageX + 'px';
+        contextMenu.style.top = e.pageY + 'px';
+        contextMenu.style.display = 'block';
+        e.preventDefault();
+        return;
+    }
+    
+    // Second: check if selecting new text
     const sel = window.getSelection();
     if (isSelectionValid(sel)) {
-        lastSelection = sel;
         currentRange = sel.getRangeAt(0).cloneRange();
         activeHighlight = null;
         contextMenu.style.left = e.pageX + 'px';
@@ -626,26 +647,19 @@ document.addEventListener('contextmenu', e => {
         contextMenu.style.display = 'block';
         e.preventDefault();
     } else {
-        const target = e.target;
-        if (target.classList.contains('highlight') || target.closest('.highlight')) {
-            activeHighlight = target.classList.contains('highlight') ? target : target.closest('.highlight');
-            lastSelection = null;
-            contextMenu.style.left = e.pageX + 'px';
-            contextMenu.style.top = e.pageY + 'px';
-            contextMenu.style.display = 'block';
-            e.preventDefault();
-        } else {
-            contextMenu.style.display = 'none';
-        }
+        contextMenu.style.display = 'none';
+        activeHighlight = null;
     }
 });
 
+// Close menu when clicking elsewhere
 document.addEventListener('click', e => {
     if (!contextMenu.contains(e.target)) {
         contextMenu.style.display = 'none';
     }
 });
 
+// Highlight new text
 document.getElementById('menuHighlight').addEventListener('click', () => {
     contextMenu.style.display = 'none';
     if (!currentRange) return;
@@ -653,54 +667,62 @@ document.getElementById('menuHighlight').addEventListener('click', () => {
         const span = document.createElement('span');
         span.className = 'highlight';
         currentRange.surroundContents(span);
-        lastSelection.removeAllRanges();
+        window.getSelection().removeAllRanges();
         saveHighlightsData();
-    } catch {}
+    } catch {
+        alert('⚠️ Please select smaller sections of text.');
+    }
 });
 
+// Add note
 document.getElementById('menuAddNote').addEventListener('click', () => {
     contextMenu.style.display = 'none';
-    let targetHighlight = activeHighlight;
-    if (!targetHighlight && currentRange) {
+    if (!activeHighlight && currentRange) {
         try {
             const span = document.createElement('span');
             span.className = 'highlight';
             currentRange.surroundContents(span);
-            targetHighlight = span;
-            lastSelection.removeAllRanges();
+            activeHighlight = span;
+            window.getSelection().removeAllRanges();
             saveHighlightsData();
-        } catch { return; }
+        } catch {
+            alert('⚠️ Please select smaller sections of text.');
+            return;
+        }
     }
-    if (!targetHighlight) return;
-    activeHighlight = targetHighlight;
-    const rect = targetHighlight.getBoundingClientRect();
+    if (!activeHighlight) return;
+    
+    const rect = activeHighlight.getBoundingClientRect();
     noteBox.style.left = (rect.right + 10) + 'px';
     noteBox.style.top = rect.top + 'px';
     noteBox.style.display = 'block';
-    noteText.value = targetHighlight.getAttribute('data-note') || '';
+    noteText.value = activeHighlight.getAttribute('data-note') || '';
     noteText.focus();
 });
 
+// ✅ FIXED: Remove Highlight — works on BOTH sides now
 document.getElementById('menuRemove').addEventListener('click', () => {
     contextMenu.style.display = 'none';
     if (!activeHighlight) return;
+    
+    // Unwrap: replace highlight span with plain text, preserve content
     const parent = activeHighlight.parentNode;
     while (activeHighlight.firstChild) {
         parent.insertBefore(activeHighlight.firstChild, activeHighlight);
     }
     parent.removeChild(activeHighlight);
     parent.normalize();
+    
     activeHighlight = null;
     saveHighlightsData();
 });
 
-// Note box drag
+// Note box logic
 const noteBox = document.getElementById('noteBox');
 const noteText = document.getElementById('noteText');
 const noteClose = document.getElementById('noteClose');
 
 noteClose.addEventListener('click', () => {
-    noteBox.style.display = 'none';
     if (activeHighlight) {
         activeHighlight.setAttribute('data-note', noteText.value);
         if (noteText.value && !activeHighlight.querySelector('.note-marker')) {
@@ -714,6 +736,7 @@ noteClose.addEventListener('click', () => {
         }
         saveHighlightsData();
     }
+    noteBox.style.display = 'none';
     activeHighlight = null;
 });
 
