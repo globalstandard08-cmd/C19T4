@@ -126,17 +126,39 @@
             flex-shrink: 0;
         }
         .ans-box.filled { background: #f5f8ff; border-color: #1f3a5f; }
-        .input-answer { 
-            width: 140px; 
-            padding: 7px 10px; 
-            border: 1px solid #ddd; 
+        
+        /* SUMMARY — input box = the blank */
+        .summary-box { 
+            border: 1px solid #333; 
+            padding: 25px; 
+            margin-top: 15px; 
             border-radius: 4px; 
-            font-size: 16px; 
-            background: #ffffff; 
-            flex-shrink: 0;
+            background: #fff; 
+            font-size: 16px;
+            line-height: 2.2;
         }
-        .input-answer:focus { outline: none; border-color: #1f3a5f; }
-        .input-answer.filled { background-color: #f5f8ff; border-color: #1f3a5f; }
+        .summary-box h4 { text-align: center; margin-bottom: 20px; color: #1f3a5f; font-size: 17px; }
+        .summary-input {
+            display: inline-block;
+            width: 160px;
+            height: 32px;
+            border: none;
+            border-bottom: 1px solid #000;
+            padding: 0 6px;
+            font-size: 16px;
+            text-align: center;
+            background: transparent;
+            outline: none;
+            vertical-align: bottom;
+            margin: 0 6px;
+        }
+        .summary-input:focus {
+            border-bottom: 2px solid #1f3a5f;
+            background-color: #f5f8ff;
+        }
+        .summary-input.filled {
+            background-color: #f5f8ff;
+        }
         
         /* HIGHLIGHT — works on BOTH sides */
         .highlight { 
@@ -319,23 +341,6 @@
         
         .people-list { border: 1px solid #ddd; padding: 15px; margin: 15px 0; border-radius: 4px; background: #f9f9f9; }
         .people-list p { margin: 6px 0; font-size: 15px; }
-        .summary-box { border: 1px solid #333; padding: 20px; margin-top: 15px; border-radius: 4px; background: #fff; }
-        .summary-box h4 { text-align: center; margin-bottom: 20px; color: #1f3a5f; font-size: 17px; }
-        .summary-text { font-size: 16px; line-height: 2; margin-bottom: 12px; }
-        .summary-line { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            margin: 10px 0; 
-            flex-wrap: wrap;
-        }
-        .blank-line {
-            display: inline-block;
-            border-bottom: 1px solid #333;
-            min-width: 160px;
-            margin: 0 8px;
-            vertical-align: bottom;
-        }
     </style>
 </head>
 <body>
@@ -471,7 +476,7 @@
                 </div>
             </div>
             
-            <!-- Questions 24–26 -->
+            <!-- Questions 24–26 — Input = the blank line -->
             <div class="questions-block">
                 <h3>Questions 24–26</h3>
                 <div class="instruction">Complete the summary below.<br>Choose <strong>ONE WORD ONLY</strong> from the passage for each answer.<br>Write your answers in boxes 24–26 on your answer sheet.</div>
@@ -479,34 +484,16 @@
                 <div class="summary-box">
                     <h4>Mining the sea floor</h4>
                     
-                    <p class="summary-text">
-                        Mining corporations believe that the mineral resources lying under the sea may be superior to those found in the earth. They also say that these can be removed without producing much
-                        <span class="blank-line"></span>
-                    </p>
-                    <div class="summary-line">
-                        <span class="q-num">24</span>
-                        <input type="text" class="input-answer" id="ans24" placeholder="ONE WORD">
-                    </div>
+                    Mining corporations believe that the mineral resources lying under the sea may be superior to those found in the earth. They also say that these can be removed without producing much
+                    <input type="text" class="summary-input" id="ans24" placeholder="24">
                     
-                    <p class="summary-text">
-                        The extraction is often done by adapting the
-                        <span class="blank-line"></span>
-                        that has already been used to work on land. The method of excavation involves removing the seawater from the slurry that is brought up to ships and returning it to the seabed.
-                    </p>
-                    <div class="summary-line">
-                        <span class="q-num">25</span>
-                        <input type="text" class="input-answer" id="ans25" placeholder="ONE WORD">
-                    </div>
+                    <br>The extraction is often done by adapting the
+                    <input type="text" class="summary-input" id="ans25" placeholder="25">
+                    that has already been used to work on land. The method of excavation involves removing the seawater from the slurry that is brought up to ships and returning it to the seabed.
                     
-                    <p class="summary-text">
-                        However, concerned groups strongly believe that
-                        <span class="blank-line"></span>
-                        is necessary due to the possible number of unidentified consequences.
-                    </p>
-                    <div class="summary-line">
-                        <span class="q-num">26</span>
-                        <input type="text" class="input-answer" id="ans26" placeholder="ONE WORD">
-                    </div>
+                    <br>However, concerned groups strongly believe that
+                    <input type="text" class="summary-input" id="ans26" placeholder="26">
+                    is necessary due to the possible number of unidentified consequences.
                 </div>
             </div>
         </div>
@@ -618,7 +605,7 @@ document.addEventListener('mouseup', () => {
 let currentRange = null;
 let activeHighlight = null;
 
-const highlightAreas = ['passageArea', 'questionsArea'];
+const highlightAreas = ['passageArea', 'questionsPane'];
 
 function isInHighlightArea(node) {
     for (const id of highlightAreas) {
@@ -796,11 +783,14 @@ let currentQuestionNum = 14;
 
 function setCurrentQuestion(qNum) {
     document.querySelectorAll('.q-row.current').forEach(r => r.classList.remove('current'));
+    document.querySelectorAll('.summary-input').forEach(i => i.classList.remove('current'));
     document.querySelectorAll('.q-indicator.current').forEach(b => b.classList.remove('current'));
     currentQuestionNum = qNum;
     const row = document.getElementById(`q${qNum}`);
     const indicator = document.querySelector(`.q-indicator[data-q="${qNum}"]`);
+    const sumInput = document.getElementById(`ans${qNum}`);
     if (row) row.classList.add('current');
+    if (sumInput && sumInput.classList.contains('summary-input')) sumInput.classList.add('current');
     if (indicator) indicator.classList.add('current');
 }
 
@@ -817,7 +807,7 @@ document.querySelectorAll('.q-indicator').forEach(btn => {
     btn.addEventListener('click', () => {
         const qNum = parseInt(btn.dataset.q);
         setCurrentQuestion(qNum);
-        const target = document.getElementById(`q${qNum}`);
+        const target = document.getElementById(`q${qNum}`) || document.getElementById(`ans${qNum}`);
         if (target) target.scrollIntoView({behavior:'smooth', block:'center'});
     });
 });
@@ -827,7 +817,7 @@ function saveAnswer(q, val) {
     updateStatus();
 }
 
-// ✅ Q14–23 — Letter answers, aligned properly, NO auto-replace
+// Q14–23 — Letter answers
 for (let q = 14; q <= 23; q++) {
     const box = document.getElementById(`ans${q}`);
     box.addEventListener('input', () => {
@@ -838,7 +828,7 @@ for (let q = 14; q <= 23; q++) {
     });
 }
 
-// ✅ Q24–26 — One-word answers, clean layout with blank lines
+// Q24–26 — Input = blank line, free typing
 for (let q = 24; q <= 26; q++) {
     const box = document.getElementById(`ans${q}`);
     box.addEventListener('input', () => {
