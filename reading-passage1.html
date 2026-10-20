@@ -105,7 +105,7 @@
         }
         .q-num { font-weight: bold; min-width: 28px; color: #1f3a5f; flex-shrink: 0; }
         .ans-box {
-            width: 140px;
+            width: 160px;
             height: 36px;
             border: 1px solid #333;
             border-radius: 2px;
@@ -778,18 +778,14 @@ function saveAnswer(q, val) {
     updateStatus();
 }
 
-// ✅ FIXED: Q1–6 — type freely, no forced auto-replace
+// ✅ COMPLETELY REMOVED auto-expand — type freely, nothing changes what you type
 for (let q = 1; q <= 6; q++) {
     const box = document.getElementById(`ans${q}`);
     box.addEventListener('input', () => {
-        let val = box.value.trim().toUpperCase();
-        // Only auto-complete if fully typed, not on every letter
-        if (val === 'T') val = 'TRUE';
-        else if (val === 'F') val = 'FALSE';
-        else if (val === 'N') val = 'NOT GIVEN';
-        // Keep whatever user typed if not matching shortcuts
+        // Just uppercase — NO automatic word replacement
+        const val = box.value.toUpperCase();
         box.value = val;
-        box.classList.toggle('filled', val !== '');
+        box.classList.toggle('filled', val.trim() !== '');
         saveAnswer(q, val);
     });
 }
