@@ -163,7 +163,6 @@
         <div class="content" id="passageArea">
 <!-- ========== PART 2 ========== -->
 <h2>PART 2 — Questions 11–20</h2>
-
 <div class="instruction"><strong>Questions 11 and 12</strong><br>Choose <strong>TWO</strong> letters, A–E.</div>
 <p style="font-weight:bold; margin-bottom:8px;">Which <strong>TWO</strong> problems with some training programmes for new runners does Liz mention?</p>
 <div class="mcq-option"><input type="checkbox" data-q="11" value="A"> A There is a risk of serious injury.</div>
@@ -171,7 +170,6 @@
 <div class="mcq-option"><input type="checkbox" data-q="11" value="C"> C They are unsuitable for people with health issues.</div>
 <div class="mcq-option"><input type="checkbox" data-q="11" value="D"> D It is difficult to stay motivated.</div>
 <div class="mcq-option"><input type="checkbox" data-q="11" value="E"> E There is a lack of individual support.</div>
-
 <div class="instruction" style="margin-top:25px;"><strong>Questions 13 and 14</strong><br>Choose <strong>TWO</strong> letters, A–E.</div>
 <p style="font-weight:bold; margin-bottom:8px;">Which <strong>TWO</strong> tips does Liz recommend for new runners?</p>
 <div class="mcq-option"><input type="checkbox" data-q="13" value="A"> A doing two runs a week</div>
@@ -179,7 +177,6 @@
 <div class="mcq-option"><input type="checkbox" data-q="13" value="C"> C going on runs with a friend</div>
 <div class="mcq-option"><input type="checkbox" data-q="13" value="D"> D listening to music during runs</div>
 <div class="mcq-option"><input type="checkbox" data-q="13" value="E"> E running very slowly</div>
-
 <div class="instruction" style="margin-top:25px;"><strong>Questions 15–18</strong><br>What reason prevented each of the following members of the Compton Park Runners Club from joining until recently?<br>Write the correct letter, <strong>A, B</strong> or <strong>C</strong> next to Questions 15–18.</div>
 <div class="matching-row">
     <div class="matching-questions">
@@ -196,18 +193,15 @@
         <p><strong>C</strong> &nbsp; a lack of time</p>
     </div>
 </div>
-
 <div class="instruction"><strong>Questions 19 and 20</strong><br>Choose the correct letter, <strong>A, B</strong> or <strong>C</strong>.</div>
 <p style="font-weight:bold; margin-bottom:8px;">19 What does Liz say about running her first marathon?</p>
 <div class="mcq-option"><input type="radio" name="q19" data-q="19" value="A"> A It had always been her ambition.</div>
 <div class="mcq-option"><input type="radio" name="q19" data-q="19" value="B"> B Her husband persuaded her to do it.</div>
 <div class="mcq-option"><input type="radio" name="q19" data-q="19" value="C"> C She nearly gave up before the end.</div>
-
 <p style="font-weight:bold; margin:20px 0 8px;">20 Liz says new runners should sign up for a race</p>
 <div class="mcq-option"><input type="radio" name="q20" data-q="20" value="A"> A every six months.</div>
 <div class="mcq-option"><input type="radio" name="q20" data-q="20" value="B"> B within a few weeks of taking up running.</div>
 <div class="mcq-option"><input type="radio" name="q20" data-q="20" value="C"> C after completing several practice runs.</div>
-
 <!-- ========== NAV AT BOTTOM ========== -->
 <div class="question-status">
     <span class="part-label">Section 2</span>
@@ -221,11 +215,11 @@
         </div><!-- /content -->
     </div><!-- /container -->
 <script>
-const STORAGE_KEY = 'Listening_Section2';
+// ✅ UPDATED: Exact match for Cambridge 19 Test 4
+const STORAGE_KEY = 'Cambridge19_Test4_Listening';
 const passageId = 'listening-section2';
 let currentRange = null;
 let activeHighlight = null;
-
 function updateStatus() {
     for (let q = 11; q <= 20; q++) {
         const btn = document.querySelector(`.q-indicator[data-q="${q}"]`);
@@ -242,7 +236,6 @@ function updateStatus() {
         btn.classList.toggle('answered', hasValue);
     }
 }
-
 function saveHighlights() {
     const highlights = document.querySelectorAll('#passageArea .highlight');
     const data = Array.from(highlights).map(h => ({
@@ -251,7 +244,6 @@ function saveHighlights() {
     }));
     localStorage.setItem(`${passageId}_highlights`, JSON.stringify(data));
 }
-
 function isSelectionValid(sel) {
     if (!sel || sel.isCollapsed || !sel.toString().trim()) return false;
     try {
@@ -263,24 +255,20 @@ function isSelectionValid(sel) {
         return inArea && !inInput;
     } catch { return false; }
 }
-
 const noteBox = document.getElementById('noteBox');
 const noteText = document.getElementById('noteText');
 const noteClose = document.getElementById('noteClose');
 let isDraggingNote = false, offsetX = 0, offsetY = 0;
-
 noteClose.addEventListener('click', () => {
     noteBox.style.display = 'none';
     activeHighlight = null;
 });
-
 noteText.addEventListener('input', () => {
     if (activeHighlight) {
         activeHighlight.setAttribute('data-note', noteText.value);
         saveHighlights();
     }
 });
-
 document.addEventListener('mousedown', e => {
     if (!e.target.closest('.note-header')) return;
     isDraggingNote = true;
@@ -288,15 +276,12 @@ document.addEventListener('mousedown', e => {
     offsetX = e.clientX - rc.left;
     offsetY = e.clientY - rc.top;
 });
-
 document.addEventListener('mousemove', e => {
     if (!isDraggingNote) return;
     noteBox.style.left = (e.clientX - offsetX) + 'px';
     noteBox.style.top = (e.clientY - offsetY) + 'px';
 });
-
 document.addEventListener('mouseup', () => isDraggingNote = false);
-
 const ctxMenu = document.getElementById('contextMenu');
 document.addEventListener('contextmenu', e => {
     const sel = window.getSelection();
@@ -320,11 +305,9 @@ document.addEventListener('contextmenu', e => {
         activeHighlight = null;
     }
 });
-
 document.addEventListener('click', e => {
     if (!ctxMenu.contains(e.target)) ctxMenu.style.display = 'none';
 });
-
 document.getElementById('menuHighlight').addEventListener('click', () => {
     if (!currentRange) return;
     try {
@@ -338,7 +321,6 @@ document.getElementById('menuHighlight').addEventListener('click', () => {
     } catch { alert('⚠️ Select smaller text please.'); }
     ctxMenu.style.display = 'none';
 });
-
 document.getElementById('menuAddNote').addEventListener('click', () => {
     ctxMenu.style.display = 'none';
     if (!activeHighlight) {
@@ -367,7 +349,6 @@ document.getElementById('menuAddNote').addEventListener('click', () => {
     noteText.value = activeHighlight.getAttribute('data-note') || '';
     noteText.focus();
 });
-
 document.getElementById('menuRemove').addEventListener('click', () => {
     ctxMenu.style.display = 'none';
     noteBox.style.display = 'none';
@@ -380,12 +361,10 @@ document.getElementById('menuRemove').addEventListener('click', () => {
     activeHighlight = null;
     saveHighlights();
 });
-
 function saveAnswer(q, val) {
     localStorage.setItem(`${STORAGE_KEY}_q${q}`, val);
     updateStatus();
 }
-
 function clearAll() {
     if (!confirm('⚠️ Clear all answers and highlights? This cannot be undone.')) return;
     for (let q = 11; q <= 20; q++) localStorage.removeItem(`${STORAGE_KEY}_q${q}`);
@@ -399,7 +378,6 @@ function clearAll() {
     noteBox.style.display = 'none';
     updateStatus();
 }
-
 document.addEventListener('DOMContentLoaded', () => {
     // Checkboxes (multi-answer)
     document.querySelectorAll('input[type=checkbox]').forEach(inp => {
