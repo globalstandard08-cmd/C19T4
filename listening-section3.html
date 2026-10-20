@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IELTS Listening — Section 3</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
+        body { background-color: #f4f6f9; padding: 20px; line-height: 1.7; }
+        .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; }
+        .header-bar { background-color: #1f3a5f; color: white; padding: 15px 25px; font-size: 18px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+        .content { padding: 25px 30px; }
+        h2 { color: #1f3a5f; margin: 30px 0 15px; font-size: 22px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
+        .instruction { background-color: #f8fbfe; border-left: 4px solid #1f3a5f; padding: 15px; margin-bottom: 25px; border-radius: 4px; font-weight: 500; }
+        .mcq-option { display: flex; align-items: flex-start; gap: 10px; margin: 10px 0; padding: 6px 0; font-size: 16px; }
+        .mcq-option input { margin-top: 3px; cursor: pointer; }
+        /* === SIDE-BY-SIDE MATCHING LAYOUT === */
+        .matching-row { display: flex; gap: 30px; margin: 20px 0 30px; flex-wrap: wrap; }
+        .matching-questions { flex: 1; min-width: 250px; }
+        .matching-options { flex: 0 0 260px; background: #fdfdfd; border: 1px solid #ccc; padding: 20px; border-radius: 6px; }
+        .matching-options h4 { margin-bottom: 12px; color: #1f3a5f; }
+        .match-q-item { margin: 10px 0; font-size: 16px; display: flex; align-items: center; gap: 10px; }
+        .match-select { padding: 4px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; min-width: 60px; }
+        .q-num { display: inline-block; min-width: 35px; font-weight: bold; color: #1f3a5f; }
+        /* === HIGHLIGHT SYSTEM === */
+        .highlight {
+            background-color: #ffd700;
+            padding: 2px 4px;
+            border-radius: 2px;
+            cursor: pointer;
+            display: inline;
+            position: relative;
+            transition: background-color 0.2s;
+        }
+        .highlight:hover { background-color: #ffeb3b; }
+        .note-marker {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 18px;
+            height: 18px;
+            background: #1f3a5f;
+            color: white;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        .context-menu {
+            position: absolute;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            z-index: 9999;
+            display: none;
+            min-width: 180px;
+        }
+        .context-menu div { padding: 10px 14px; cursor: pointer; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+        .context-menu div:last-child { border-bottom: none; }
+        .context-menu div:hover { background: #f0f0f0; }
+        .note-box {
+            position: absolute;
+            width: 260px;
+            min-height: 80px;
+            background: #fffde7;
+            border: 1px solid #f9d423;
+            border-radius: 6px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+            z-index: 9990;
+            display: none;
+        }
+        .note-header {
+            background: #f9d423;
+            padding: 6px 10px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #333;
+        }
+        .note-close { cursor: pointer; font-weight: bold; font-size: 16px; line-height: 1; }
+        .note-textarea {
+            width: 100%;
+            min-height: 60px;
+            border: none;
+            padding: 10px;
+            font-size: 14px;
+            resize: vertical;
+            background: transparent;
+            outline: none;
+        }
+        /* === NAVIGATION === */
+        .question-status {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 5px;
+            margin: 30px 0 15px;
+            padding: 12px 15px;
+            background: #f0f2f5;
+            border-radius: 4px;
+            border: 1px solid #d0d5dd;
+        }
+        .part-label { font-size: 11px; font-weight: 600; color: #1f3a5f; margin-right: 4px; margin-left: 8px; }
+        .q-indicator {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 3px;
+            border: 1px solid #ddd;
+            background: #e5e7eb;
+            color: #333;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .q-indicator.answered { background: #10b981 !important; color: white !important; border-color: #10b981 !important; }
+        .clear-btn { background-color: #dc2626; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        .clear-btn:hover { background-color: #b91c1c; }
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        .back-main-btn { background-color: #6b7280; color: white; border: none; padding: 10px 18px; border-radius: 4px; font-size: 15px; text-decoration: none; }
+        .back-main-btn:hover { background-color: #4b5563; }
+        .next-btn { background-color: #10b981; color: white; border: none; padding: 10px 18px; border-radius: 4px; font-size: 15px; text-decoration: none; }
+        .next-btn:hover { background-color: #059669; }
+    </style>
+</head>
+<body>
+    <!-- Right-Click Menu -->
+    <div class="context-menu" id="contextMenu">
+        <div id="menuHighlight">🖍️ Highlight</div>
+        <div id="menuAddNote">📝 Add Note</div>
+        <div id="menuRemove">❌ Remove Highlight & Note</div>
+    </div>
+    <!-- Draggable Note Box -->
+    <div class="note-box" id="noteBox">
+        <div class="note-header" id="noteDragHandle">
+            <span>📝 Note</span>
+            <span class="note-close" id="noteClose">×</span>
+        </div>
+        <textarea class="note-textarea" id="noteText" placeholder="Type your note here…"></textarea>
+    </div>
+    <div class="container">
+        <div class="header-bar">
+            <span>LISTENING — SECTION 3</span>
+            <span style="font-size:15px; opacity:0.9;">Exam Mode</span>
+        </div>
+        <div class="content" id="passageArea">
+<!-- ========== PART 3 ========== -->
+<h2>PART 3 — Questions 21–30</h2>
+
+<div class="instruction"><strong>Questions 21–25</strong><br>Choose the correct letter, <strong>A, B</strong> or <strong>C</strong>.</div>
+
+<p style="font-weight:bold; margin-bottom:8px;">21 Kieran thinks the packing advice given by Jane's grandfather is</p>
+<div class="mcq-option"><input type="radio" name="q21" data-q="21" value="A"> A common sense.</div>
+<div class="mcq-option"><input type="radio" name="q21" data-q="21" value="B"> B hard to follow.</div>
+<div class="mcq-option"><input type="radio" name="q21" data-q="21" value="C"> C over-protective.</div>
+
+<p style="font-weight:bold; margin:20px 0 8px;">22 How does Jane feel about the books her grandfather has given her?</p>
+<div class="mcq-option"><input type="radio" name="q22" data-q="22" value="A"> A They are not worth keeping.</div>
+<div class="mcq-option"><input type="radio" name="q22" data-q="22" value="B"> B They should go to a collector.</div>
+<div class="mcq-option"><input type="radio" name="q22" data-q="22" value="C"> C They have sentimental value for her.</div>
+
+<p style="font-weight:bold; margin:20px 0 8px;">23 Jane and Kieran agree that hardback books should be</p>
+<div class="mcq-option"><input type="radio" name="q23" data-q="23" value="A"> A put out on display.</div>
+<div class="mcq-option"><input type="radio" name="q23" data-q="23" value="B"> B given as gifts to visitors.</div>
+<div class="mcq-option"><input type="radio" name="q23" data-q="23" value="C"> C more attractively designed.</div>
+
+<p style="font-weight:bold; margin:20px 0 8px;">24 While talking about taking a book from a shelf, Jane</p>
+<div class="mcq-option"><input type="radio" name="q24" data-q="24" value="A"> A describes the mistakes other people make doing it.</div>
+<div class="mcq-option"><input type="radio" name="q24" data-q="24" value="B"> B reflects on a significant childhood experience.</div>
+<div class="mcq-option"><input type="radio" name="q24" data-q="24" value="C"> C explains why some books are easier to remove than others.</div>
+
+<p style="font-weight:bold; margin:20px 0 8px;">25 What do Jane and Kieran suggest about new books?</p>
+<div class="mcq-option"><input type="radio" name="q25" data-q="25" value="A"> A Their parents liked buying them as presents.</div>
+<div class="mcq-option"><input type="radio" name="q25" data-q="25" value="B"> B They would like to buy more of them.</div>
+<div class="mcq-option"><input type="radio" name="q25" data-q="25" value="C"> C Not everyone can afford them.</div>
+
+<div class="instruction" style="margin-top:30px;"><strong>Questions 26–30</strong><br>Where does Jane's grandfather keep each of the following types of books in his shop?<br>Choose <strong>FIVE</strong> answers from the box and write the correct letter, <strong>A–G</strong>, next to Questions 26–30.</div>
+<div class="matching-row">
+    <div class="matching-questions">
+        <p style="font-weight:bold; margin-bottom:10px;">Types of books</p>
+        <div class="match-q-item"><span class="q-num">26</span> rare books <select class="match-select" data-q="26"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option></select></div>
+        <div class="match-q-item"><span class="q-num">27</span> children's books <select class="match-select" data-q="27"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option></select></div>
+        <div class="match-q-item"><span class="q-num">28</span> unwanted books <select class="match-select" data-q="28"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option></select></div>
+        <div class="match-q-item"><span class="q-num">29</span> requested books <select class="match-select" data-q="29"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option></select></div>
+        <div class="match-q-item"><span class="q-num">30</span> course books <select class="match-select" data-q="30"><option value="">—</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option></select></div>
+    </div>
+    <div class="matching-options">
+        <h4>Location of books</h4>
+        <p><strong>A</strong> &nbsp; near the entrance</p>
+        <p><strong>B</strong> &nbsp; in the attic</p>
+        <p><strong>C</strong> &nbsp; at the back of the shop</p>
+        <p><strong>D</strong> &nbsp; on a high shelf</p>
+        <p><strong>E</strong> &nbsp; near the stairs</p>
+        <p><strong>F</strong> &nbsp; in a specially designed space</p>
+        <p><strong>G</strong> &nbsp; within the café</p>
+    </div>
+</div>
+
+<!-- ========== NAV AT BOTTOM ========== -->
+<div class="question-status">
+    <span class="part-label">Section 3</span>
+    <div class="q-indicator" data-q="21">21</div><div class="q-indicator" data-q="22">22</div><div class="q-indicator" data-q="23">23</div><div class="q-indicator" data-q="24">24</div><div class="q-indicator" data-q="25">25</div><div class="q-indicator" data-q="26">26</div><div class="q-indicator" data-q="27">27</div><div class="q-indicator" data-q="28">28</div><div class="q-indicator" data-q="29">29</div><div class="q-indicator" data-q="30">30</div>
+</div>
+<button class="clear-btn" onclick="clearAll()">🗑️ Clear All Answers & Highlights</button>
+<div class="nav-container">
+    <a href="listening-section2.html" class="back-main-btn">← Section 2</a>
+    <a href="listening-section4.html" class="next-btn">Next: Section 4 →</a>
+</div>
+        </div><!-- /content -->
+    </div><!-- /container -->
+<script>
+const STORAGE_KEY = 'Listening_Section3';
+const passageId = 'listening-section3';
+let currentRange = null;
+let activeHighlight = null;
+
+function updateStatus() {
+    for (let q = 21; q <= 30; q++) {
+        const btn = document.querySelector(`.q-indicator[data-q="${q}"]`);
+        if (!btn) continue;
+        const val = localStorage.getItem(`${STORAGE_KEY}_q${q}`) || '';
+        btn.classList.toggle('answered', val.trim() !== '');
+    }
+}
+
+function saveHighlights() {
+    const highlights = document.querySelectorAll('#passageArea .highlight');
+    const data = Array.from(highlights).map(h => ({
+        outerHTML: h.outerHTML,
+        note: h.getAttribute('data-note') || ''
+    }));
+    localStorage.setItem(`${passageId}_highlights`, JSON.stringify(data));
+}
+
+function isSelectionValid(sel) {
+    if (!sel || sel.isCollapsed || !sel.toString().trim()) return false;
+    try {
+        const r = sel.getRangeAt(0);
+        const p = r.commonAncestorContainer.nodeType === Node.TEXT_NODE
+            ? r.commonAncestorContainer.parentElement : r.commonAncestorContainer;
+        const inArea = document.getElementById('passageArea').contains(p);
+        const inInput = p.closest('input,textarea,button,select,.context-menu,.note-box');
+        return inArea && !inInput;
+    } catch { return false; }
+}
+
+const noteBox = document.getElementById('noteBox');
+const noteText = document.getElementById('noteText');
+const noteClose = document.getElementById('noteClose');
+let isDraggingNote = false, offsetX = 0, offsetY = 0;
+
+noteClose.addEventListener('click', () => {
+    noteBox.style.display = 'none';
+    activeHighlight = null;
+});
+
+noteText.addEventListener('input', () => {
+    if (activeHighlight) {
+        activeHighlight.setAttribute('data-note', noteText.value);
+        saveHighlights();
+    }
+});
+
+document.addEventListener('mousedown', e => {
+    if (!e.target.closest('.note-header')) return;
+    isDraggingNote = true;
+    const rc = noteBox.getBoundingClientRect();
+    offsetX = e.clientX - rc.left;
+    offsetY = e.clientY - rc.top;
+});
+
+document.addEventListener('mousemove', e => {
+    if (!isDraggingNote) return;
+    noteBox.style.left = (e.clientX - offsetX) + 'px';
+    noteBox.style.top = (e.clientY - offsetY) + 'px';
+});
+
+document.addEventListener('mouseup', () => isDraggingNote = false);
+
+const ctxMenu = document.getElementById('contextMenu');
+document.addEventListener('contextmenu', e => {
+    const sel = window.getSelection();
+    const targetHl = e.target.closest('.highlight');
+    ctxMenu.style.display = 'none';
+    if (targetHl) {
+        e.preventDefault();
+        activeHighlight = targetHl;
+        const rc = targetHl.getBoundingClientRect();
+        ctxMenu.style.left = (rc.left + window.scrollX) + 'px';
+        ctxMenu.style.top = (rc.bottom + window.scrollY + 5) + 'px';
+        ctxMenu.style.display = 'block';
+        currentRange = null;
+    } else if (isSelectionValid(sel)) {
+        e.preventDefault();
+        currentRange = sel.getRangeAt(0).cloneRange();
+        const rc = currentRange.getBoundingClientRect();
+        ctxMenu.style.left = (rc.left + window.scrollX) + 'px';
+        ctxMenu.style.top = (rc.bottom + window.scrollY + 5) + 'px';
+        ctxMenu.style.display = 'block';
+        activeHighlight = null;
+    }
+});
+
+document.addEventListener('click', e => {
+    if (!ctxMenu.contains(e.target)) ctxMenu.style.display = 'none';
+});
+
+document.getElementById('menuHighlight').addEventListener('click', () => {
+    if (!currentRange) return;
+    try {
+        const sp = document.createElement('span');
+        sp.className = 'highlight';
+        sp.textContent = currentRange.toString();
+        currentRange.deleteContents();
+        currentRange.insertNode(sp);
+        window.getSelection().removeAllRanges();
+        saveHighlights();
+    } catch { alert('⚠️ Select smaller text please.'); }
+    ctxMenu.style.display = 'none';
+});
+
+document.getElementById('menuAddNote').addEventListener('click', () => {
+    ctxMenu.style.display = 'none';
+    if (!activeHighlight) {
+        if (!currentRange) return;
+        try {
+            const sp = document.createElement('span');
+            sp.className = 'highlight';
+            sp.textContent = currentRange.toString();
+            currentRange.deleteContents();
+            currentRange.insertNode(sp);
+            activeHighlight = sp;
+            window.getSelection().removeAllRanges();
+            saveHighlights();
+        } catch { alert('⚠️ Select smaller text please.'); return; }
+    }
+    if (!activeHighlight.querySelector('.note-marker')) {
+        const m = document.createElement('span');
+        m.className = 'note-marker';
+        m.textContent = '!';
+        activeHighlight.appendChild(m);
+    }
+    const rc = activeHighlight.getBoundingClientRect();
+    noteBox.style.left = (rc.right + window.scrollX + 10) + 'px';
+    noteBox.style.top = (rc.top + window.scrollY) + 'px';
+    noteBox.style.display = 'block';
+    noteText.value = activeHighlight.getAttribute('data-note') || '';
+    noteText.focus();
+});
+
+document.getElementById('menuRemove').addEventListener('click', () => {
+    ctxMenu.style.display = 'none';
+    noteBox.style.display = 'none';
+    if (!activeHighlight) return;
+    activeHighlight.parentNode.replaceChild(
+        document.createTextNode(activeHighlight.textContent),
+        activeHighlight
+    );
+    activeHighlight.parentNode.normalize();
+    activeHighlight = null;
+    saveHighlights();
+});
+
+function saveAnswer(q, val) {
+    localStorage.setItem(`${STORAGE_KEY}_q${q}`, val);
+    updateStatus();
+}
+
+function clearAll() {
+    if (!confirm('⚠️ Clear all answers and highlights? This cannot be undone.')) return;
+    for (let q = 21; q <= 30; q++) localStorage.removeItem(`${STORAGE_KEY}_q${q}`);
+    localStorage.removeItem(`${passageId}_highlights`);
+    document.querySelectorAll('input[type=radio]').forEach(i => i.checked = false);
+    document.querySelectorAll('.match-select').forEach(s => s.selectedIndex = 0);
+    document.querySelectorAll('.highlight').forEach(h => {
+        h.parentNode.replaceChild(document.createTextNode(h.textContent), h);
+        h.parentNode.normalize();
+    });
+    noteBox.style.display = 'none';
+    updateStatus();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Radio buttons (single answer)
+    document.querySelectorAll('input[type=radio]').forEach(inp => {
+        const q = inp.dataset.q;
+        const saved = localStorage.getItem(`${STORAGE_KEY}_q${q}`) || '';
+        inp.checked = (inp.value === saved);
+        inp.addEventListener('change', () => saveAnswer(q, inp.value));
+    });
+    // Matching dropdowns
+    document.querySelectorAll('.match-select').forEach(s => {
+        const q = s.dataset.q;
+        s.value = localStorage.getItem(`${STORAGE_KEY}_q${q}`) || '';
+        s.addEventListener('change', () => saveAnswer(q, s.value));
+    });
+    updateStatus();
+});
+</script>
+</body>
+</html>
