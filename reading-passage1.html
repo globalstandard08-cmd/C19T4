@@ -22,16 +22,15 @@
         }
         .logo { height: 55px; width: auto; }
         
-        /* MAIN TWO-COLUMN LAYOUT */
-        .main-grid { display: flex; min-height: calc(100vh - 75px - 48px); gap: 2px; }
+        /* MAIN TWO-COLUMN LAYOUT — DRAGGABLE */
+        .main-grid { display: flex; min-height: calc(100vh - 75px - 48px); }
         
         /* LEFT: PASSAGE PANEL */
         .passage-pane { 
-            width: 50%; 
+            width: calc(50% - 6px); 
             background: #ffffff; 
             overflow-y: auto; 
             padding: 25px; 
-            border-right: 1px solid #eee; 
             max-height: calc(100vh - 75px - 48px); 
             position: sticky; 
             top: 75px; 
@@ -59,9 +58,34 @@
         .passage-text p { margin-bottom: 14px; text-align: justify; }
         .para-label { font-weight: bold; color: #1f3a5f; display: inline-block; min-width: 24px; }
         
+        /* DRAGGABLE DIVIDER — matches real IELTS */
+        .divider {
+            width: 12px;
+            background-color: #e0e0e0;
+            cursor: col-resize;
+            flex-shrink: 0;
+            position: relative;
+            border-left: 1px solid #d0d0d0;
+            border-right: 1px solid #d0d0d0;
+        }
+        .divider:hover, .divider.active {
+            background-color: #b8b8b8;
+        }
+        .divider::after {
+            content: "⋮⋮";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #888;
+            font-size: 10px;
+            letter-spacing: -2px;
+            pointer-events: none;
+        }
+        
         /* RIGHT: QUESTIONS PANEL */
         .questions-pane { 
-            width: 50%; 
+            width: calc(50% - 6px); 
             background: #ffffff; 
             overflow-y: auto; 
             padding: 25px; 
@@ -309,16 +333,16 @@
     </div>
     
     <!-- MAIN CONTENT -->
-    <div class="main-grid">
+    <div class="main-grid" id="mainGrid">
         <!-- LEFT PANEL: PASSAGE -->
-        <div class="passage-pane" id="passageArea">
+        <div class="passage-pane" id="passagePane">
             <div class="exam-title">READING — CAMBRIDGE TEST</div>
             
             <h2>READING PASSAGE 1</h2>
             <div class="instruction">You should spend about 20 minutes on Questions 1–13, which are based on Reading Passage 1 below.</div>
             <h3 style="color:#1f3a5f; margin:15px 0; font-size:22px; text-align:center;">The impact of climate change on butterflies in Britain</h3>
             
-            <div class="passage-text">
+            <div class="passage-text" id="passageArea">
 <p>According to conservationists, populations of around two thirds of butterfly species have declined in Britain over the past 40 years. If this trend continues, it might have unpredictable knock-on effects for other species in the ecosystem. Butterfly eggs develop into caterpillars and these insects, which are the second stage in a new butterfly's lifecycle, consume vast quantities of plant material, and in turn act as prey for birds as well as bats and other small mammals. Only by arming themselves with an understanding of why butterfly numbers are down can conservationists hope to halt or reverse the decline.</p>
 
 <p>Butterflies prefer outdoor conditions to be 'just right', which means neither too hot nor too cold. Under the conditions of climate change, the temperature at any given time in summer is generally getting warmer, leaving butterflies with the challenge of how to deal with this. One of the main ways in which species are ensuring conditions suit them is by changing the time of year at which they are active and reproduce. Scientists refer to the timing of such lifecycle events as 'phenology', so when an animal or plant starts to do something earlier in the year than it usually does, it is said to be 'advancing its phenology'.</p>
@@ -339,8 +363,11 @@
             </div>
         </div>
         
+        <!-- DRAGGABLE DIVIDER -->
+        <div class="divider" id="divider"></div>
+        
         <!-- RIGHT PANEL: QUESTIONS -->
-        <div class="questions-pane" id="questionsArea">
+        <div class="questions-pane" id="questionsPane">
             <!-- Questions 1–6 — TRUE/FALSE/NOT GIVEN -->
             <div class="questions-block">
                 <h3>Questions 1–6</h3>
@@ -498,6 +525,50 @@
 <script>
 const STORAGE_KEY = 'CambridgeTest_Reading';
 const passageId = 'reading-passage1';
+
+// === DRAGGABLE DIVIDER — matches real IELTS ===
+const divider = document.getElementById('divider');
+const passagePane = document.getElementById('passagePane');
+const questionsPane = document.getElementById('questionsPane');
+const MIN_WIDTH = 25;
+const MAX_WIDTH = 75;
+
+// Load saved position or default 50%
+let savedSplit = localStorage.getItem(`${STORAGE_KEY}_split`);
+let passagePercent = savedSplit ? parseFloat(savedSplit) : 50;
+
+function applySplit() {
+    passagePane.style.width = `calc(${passagePercent}% - 6px)`;
+    questionsPane.style.width = `calc(${100 - passagePercent}% - 6px)`;
+}
+applySplit();
+
+let isDragging = false;
+divider.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    divider.classList.add('active');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+});
+document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const gridRect = document.getElementById('mainGrid').getBoundingClientRect();
+    let newPercent = ((e.clientX - gridRect.left) / gridRect.width) * 100;
+    newPercent = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, newPercent));
+    passagePercent = newPercent;
+    applySplit();
+});
+document.addEventListener('mouseup', () => {
+    if (isDragging) {
+        isDragging = false;
+        divider.classList.remove('active');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        localStorage.setItem(`${STORAGE_KEY}_split`, passagePercent);
+    }
+});
+
+// === ALL REMAINING CODE UNCHANGED ===
 let currentRange = null;
 let activeHighlight = null;
 let currentQuestionNum = 1;
@@ -685,12 +756,10 @@ for (let q = 1; q <= 6; q++) {
     box.addEventListener('input', () => {
         let val = box.value.trim().toUpperCase();
         if (val.length > 1) val = val.substring(0, 1);
-        if (val && !['T','F','N','TRUE','FALSE','NOT GIVEN'].includes(val) && !['TRUE','FALSE','NOT GIVEN'].includes(val)) {
-            if (!['T','F','N'].includes(val)) val = '';
-        }
         if (val === 'T') val = 'TRUE';
         if (val === 'F') val = 'FALSE';
         if (val === 'N') val = 'NOT GIVEN';
+        if (!['TRUE','FALSE','NOT GIVEN','T','F','N'].includes(val)) val = '';
         box.value = val;
         box.classList.toggle('filled', val !== '');
         saveAnswer(q, val);
@@ -712,6 +781,7 @@ function clearAllData() {
     if (!confirm('⚠️ Are you sure you want to clear ALL answers, highlights, and notes? This cannot be undone.')) return;
     for (let q = 1; q <= 40; q++) localStorage.removeItem(`${STORAGE_KEY}_q${q}`);
     localStorage.removeItem(`${passageId}_highlights`);
+    localStorage.removeItem(`${STORAGE_KEY}_split`);
     document.querySelectorAll('input').forEach(i => { i.value = ''; i.classList.remove('filled'); });
     document.querySelectorAll('.highlight').forEach(hl => {
         const parent = hl.parentNode;
@@ -726,24 +796,15 @@ document.getElementById('clearAllBtn').addEventListener('click', clearAllData);
 document.addEventListener('DOMContentLoaded', () => {
     restoreNoteMarkers();
     
-    // Restore answers Q1–6
     for (let q = 1; q <= 6; q++) {
         const box = document.getElementById(`ans${q}`);
         const saved = localStorage.getItem(`${STORAGE_KEY}_q${q}`) || '';
-        if (saved) {
-            box.value = saved;
-            box.classList.add('filled');
-        }
+        if (saved) { box.value = saved; box.classList.add('filled'); }
     }
-    
-    // Restore answers Q7–13
     for (let q = 7; q <= 13; q++) {
         const box = document.getElementById(`ans${q}`);
         const saved = localStorage.getItem(`${STORAGE_KEY}_q${q}`) || '';
-        if (saved) {
-            box.value = saved;
-            box.classList.add('filled');
-        }
+        if (saved) { box.value = saved; box.classList.add('filled'); }
     }
     
     setCurrentQuestion(1);
