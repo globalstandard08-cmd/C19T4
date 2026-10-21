@@ -99,7 +99,7 @@
             display: flex; 
             align-items: flex-start; 
             gap: 10px; 
-            margin: 14px 0; 
+            margin: 14px 0 8px; 
             font-size: 16px; 
             flex-wrap: wrap; 
         }
@@ -111,25 +111,42 @@
             margin-right: -8px;
         }
         .q-num { font-weight: bold; min-width: 28px; color: #1f3a5f; flex-shrink: 0; }
-        .q-stem { flex: 1; min-width: 250px; }
-        .q-options { margin: 8px 0 8px 38px; }
-        .q-option { margin: 6px 0; font-size: 16px; line-height: 1.5; }
-        .ans-box {
-            width: 60px;
-            height: 36px;
-            border: 1px solid #333;
-            border-radius: 2px;
-            padding: 0 8px;
-            font-weight: bold;
-            font-size: 15px;
-            text-transform: uppercase;
-            background: #fff;
-            outline: none;
-            text-align: center;
-            flex-shrink: 0;
-            margin-left: auto;
+        .q-stem { flex: 1; min-width: 250px; font-weight: 500; }
+        
+        /* === IELTS-STYLE RADIO OPTIONS === */
+        .q-options { margin: 4px 0 12px 38px; }
+        .q-option { 
+            display: flex; 
+            align-items: flex-start; 
+            gap: 10px; 
+            margin: 10px 0; 
+            font-size: 16px; 
+            line-height: 1.5; 
+            cursor: pointer;
         }
-        .ans-box.filled { background: #f5f8ff; border-color: #1f3a5f; }
+        .q-option input[type="radio"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #777;
+            border-radius: 50%;
+            outline: none;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 1px;
+            background: #fff;
+        }
+        .q-option input[type="radio"]:checked {
+            border-color: #1f3a5f;
+            background: #1f3a5f;
+            box-shadow: inset 0 0 0 4px #fff;
+        }
+        .q-option:hover input[type="radio"] { border-color: #1f3a5f; }
+        .q-option label { cursor: pointer; flex: 1; }
+        
+        /* Hidden answer storage */
+        .ans-hidden { display: none; }
         
         /* SUMMARY — input = blank line */
         .summary-box { 
@@ -173,6 +190,24 @@
             background: #f9f9f9;
         }
         .yn-legend p { margin: 6px 0; font-size: 15px; }
+        
+        /* Standard letter answer boxes (Q36-40) */
+        .ans-box {
+            width: 60px;
+            height: 36px;
+            border: 1px solid #333;
+            border-radius: 2px;
+            padding: 0 8px;
+            font-weight: bold;
+            font-size: 15px;
+            text-transform: uppercase;
+            background: #fff;
+            outline: none;
+            text-align: center;
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+        .ans-box.filled { background: #f5f8ff; border-color: #1f3a5f; }
         
         /* HIGHLIGHT — works on BOTH sides */
         .highlight { 
@@ -415,52 +450,100 @@
                 <div class="q-row" id="q27">
                     <span class="q-num">27</span>
                     <div class="q-stem">What is the writer doing in the first paragraph?</div>
-                    <input type="text" class="ans-box" id="ans27" placeholder="">
+                    <input type="text" class="ans-hidden" id="ans27" data-q="27">
                 </div>
                 <div class="q-options">
-                    <div class="q-option"><strong>A</strong> setting out two opposing views about human nature</div>
-                    <div class="q-option"><strong>B</strong> justifying his opinion about our tendency to be greedy</div>
-                    <div class="q-option"><strong>C</strong> describing a commonly held belief about people's behaviour</div>
-                    <div class="q-option"><strong>D</strong> explaining why he thinks that humans act in a selfish manner</div>
+                    <div class="q-option">
+                        <input type="radio" name="q27" value="A" id="q27a">
+                        <label for="q27a">A setting out two opposing views about human nature</label>
+                    </div>
+                    <div class="q-option">
+                        <input type="radio" name="q27" value="B" id="q27b">
+                        <label for="q27b">B justifying his opinion about our tendency to be greedy</label>
+                    </div>
+                    <div class="q-option">
+                        <input type="radio" name="q27" value="C" id="q27c">
+                        <label for="q27c">C describing a commonly held belief about people's behaviour</label>
+                    </div>
+                    <div class="q-option">
+                        <input type="radio" name="q27" value="D" id="q27d">
+                        <label for="q27d">D explaining why he thinks that humans act in a selfish manner</label>
+                    </div>
                 </div>
                 
                 <!-- Q28 -->
                 <div class="q-row" id="q28">
                     <span class="q-num">28</span>
                     <div class="q-stem">What point is made about Richard Dawkins' book <em>The Selfish Gene</em>?</div>
-                    <input type="text" class="ans-box" id="ans28" placeholder="">
+                    <input type="text" class="ans-hidden" id="ans28" data-q="28">
                 </div>
                 <div class="q-options">
-                    <div class="q-option"><strong>A</strong> Its appeal lay in the radical nature of its ideas.</div>
-                    <div class="q-option"><strong>B</strong> Its success was due to the scientific support it offered.</div>
-                    <div class="q-option"><strong>C</strong> It presented a view that was in line with the attitudes of its time.</div>
-                    <div class="q-option"><strong>D</strong> It took an innovative approach to the analysis of human psychology.</div>
+                    <div class="q-option">
+                        <input type="radio" name="q28" value="A" id="q28a">
+                        <label for="q28a">A Its appeal lay in the radical nature of its ideas.</label>
+                    </div>
+                    <div class="q-option">
+                        <input type="radio" name="q28" value="B" id="q28b">
+                        <label for="q28b">B Its success was due to the scientific support it offered.</label>
+                    </div>
+                    <div class="q-option">
+                        <input type="radio" name="q28" value="C" id="q28c">
+                        <label for="q28c">C It presented a view that was in line with the attitudes of its time.</label>
+                    </div>
+                    <div class="q-option">
+                        <input type="radio" name="q28" value="D" id="q28d">
+                        <label for="q28d">D It took an innovative approach to the analysis of human psychology.</label>
+                    </div>
                 </div>
                 
                 <!-- Q29 -->
                 <div class="q-row" id="q29">
                     <span class="q-num">29</span>
                     <div class="q-stem">What does the writer suggest about the prehistoric era in the fourth paragraph?</div>
-                    <input type="text" class="ans-box" id="ans29" placeholder="">
+                    <input type="text" class="ans-hidden" id="ans29" data-q="29">
                 </div>
                 <div class="q-options">
-                    <div class="q-option"><strong>A</strong> Societies were more complex than many people believe.</div>
-                    <div class="q-option"><strong>B</strong> Supplies of natural resources were probably relatively plentiful.</div>
-                    <div class="q-option"><strong>C</strong> Most estimates about population sizes are likely to be inaccurate.</div>
-                    <div class="q-option"><strong>D</strong> Humans moved across continents more than was previously thought.</div>
+                    <div class="q-option">
+                        <input type="radio" name="q29" value="A" id="q29a">
+                        <label for="q29a">A Societies were more complex than many people believe.</label>
+                    </div>
+                    <div class="q-option">
+                        <input type="radio" name="q29" value="B" id="q29b">
+                        <label for="q29b">B Supplies of natural resources were probably relatively plentiful.</label>
+                    </div>
+                    <div class="q-option">
+                        <input type="radio" name="q29" value="C" id="q29c">
+                        <label for="q29c">C Most estimates about population sizes are likely to be inaccurate.</label>
+                    </div>
+                    <div class="q-option">
+                        <input type="radio" name="q29" value="D" id="q29d">
+                        <label for="q29d">D Humans moved across continents more than was previously thought.</label>
+                    </div>
                 </div>
                 
                 <!-- Q30 -->
                 <div class="q-row" id="q30">
                     <span class="q-num">30</span>
                     <div class="q-stem">The writer refers to Bruce Knauft's work as support for the idea that</div>
-                    <input type="text" class="ans-box" id="ans30" placeholder="">
+                    <input type="text" class="ans-hidden" id="ans30" data-q="30">
                 </div>
                 <div class="q-options">
-                    <div class="q-option"><strong>A</strong> selfishness is a relatively recent development in human societies.</div>
-                    <div class="q-option"><strong>B</strong> only people in isolated communities can live in an unselfish manner.</div>
-                    <div class="q-option"><strong>C</strong> very few lifestyles have survived unchanged since prehistoric times.</div>
-                    <div class="q-option"><strong>D</strong> hunter-gatherer cultures worldwide are declining in number.</div>
+                    <div class="q-option">
+                        <input type="radio" name="q30" value="A" id="q30a">
+                        <label for="q30a">A selfishness is a relatively recent development in human societies.</label>
+                    </div>
+                    <div class="q-option">
+                        <input type="radio" name="q30" value="B" id="q30b">
+                        <label for="q30b">B only people in isolated communities can live in an unselfish manner.</label>
+                    </div>
+                    <div class="q-option">
+                        <input type="radio" name="q30" value="C" id="q30c">
+                        <label for="q30c">C very few lifestyles have survived unchanged since prehistoric times.</label>
+                    </div>
+                    <div class="q-option">
+                        <input type="radio" name="q30" value="D" id="q30d">
+                        <label for="q30d">D hunter-gatherer cultures worldwide are declining in number.</label>
+                    </div>
                 </div>
             </div>
             
@@ -591,6 +674,7 @@
 <script>
 const STORAGE_KEY = 'Cambridge19_Test4_Reading';
 const passageId = 'reading-passage3';
+
 // === DRAGGABLE DIVIDER ===
 const divider = document.getElementById('divider');
 const passagePane = document.getElementById('passagePane');
@@ -628,6 +712,7 @@ document.addEventListener('mouseup', () => {
         localStorage.setItem(`${STORAGE_KEY}_split`, passagePercent);
     }
 });
+
 // === HIGHLIGHT SYSTEM ===
 let currentRange = null;
 let activeHighlight = null;
@@ -678,7 +763,6 @@ document.addEventListener('contextmenu', e => {
         }
         el = el.parentElement;
     }
-    
     if (clickedHighlight) {
         activeHighlight = clickedHighlight;
         contextMenu.style.left = e.pageX + 'px';
@@ -687,7 +771,6 @@ document.addEventListener('contextmenu', e => {
         e.preventDefault();
         return;
     }
-    
     const sel = window.getSelection();
     if (isSelectionValid(sel)) {
         currentRange = sel.getRangeAt(0).cloneRange();
@@ -735,7 +818,6 @@ document.getElementById('menuAddNote').addEventListener('click', () => {
         }
     }
     if (!activeHighlight) return;
-    
     const rect = activeHighlight.getBoundingClientRect();
     noteBox.style.left = (rect.right + 10) + 'px';
     noteBox.style.top = rect.top + 'px';
@@ -746,14 +828,12 @@ document.getElementById('menuAddNote').addEventListener('click', () => {
 document.getElementById('menuRemove').addEventListener('click', () => {
     contextMenu.style.display = 'none';
     if (!activeHighlight) return;
-    
     const parent = activeHighlight.parentNode;
     while (activeHighlight.firstChild) {
         parent.insertBefore(activeHighlight.firstChild, activeHighlight);
     }
     parent.removeChild(activeHighlight);
     parent.normalize();
-    
     activeHighlight = null;
     saveHighlightsData();
 });
@@ -790,6 +870,7 @@ document.addEventListener('mousemove', e => {
     noteBox.style.top = (e.clientY - noteOffsetY) + 'px';
 });
 document.addEventListener('mouseup', () => isDraggingNote = false);
+
 // === QUESTION NAVIGATION & ANSWERS ===
 let currentQuestionNum = 27;
 function setCurrentQuestion(qNum) {
@@ -824,8 +905,21 @@ function saveAnswer(q, val) {
     localStorage.setItem(`${STORAGE_KEY}_q${q}`, val.trim());
     updateStatus();
 }
-// Q27–30 & 36–40 — Letter answers
-for (let q of [27,28,29,30,36,37,38,39,40]) {
+
+// === Q27–30: RADIO BUTTON HANDLING ===
+for (let q = 27; q <= 30; q++) {
+    const radios = document.querySelectorAll(`input[name="q${q}"]`);
+    radios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            if (radio.checked) {
+                saveAnswer(q, radio.value);
+            }
+        });
+    });
+}
+
+// === Q36–40: Letter answers via text box ===
+for (let q of [36,37,38,39,40]) {
     const box = document.getElementById(`ans${q}`);
     box.addEventListener('input', () => {
         const val = box.value.toUpperCase();
@@ -834,7 +928,8 @@ for (let q of [27,28,29,30,36,37,38,39,40]) {
         saveAnswer(q, val);
     });
 }
-// Q31–35 — One-word summary answers (input = blank line)
+
+// === Q31–35: One-word summary answers ===
 for (let q = 31; q <= 35; q++) {
     const box = document.getElementById(`ans${q}`);
     box.addEventListener('input', () => {
@@ -844,12 +939,17 @@ for (let q = 31; q <= 35; q++) {
         saveAnswer(q, val);
     });
 }
+
 function clearAllData() {
     if (!confirm('⚠️ Are you sure you want to clear ALL answers, highlights, and notes? This cannot be undone.')) return;
     for (let q = 1; q <= 40; q++) localStorage.removeItem(`${STORAGE_KEY}_q${q}`);
     localStorage.removeItem(`${passageId}_highlights`);
     localStorage.removeItem(`${STORAGE_KEY}_split`);
-    document.querySelectorAll('input').forEach(i => { i.value = ''; i.classList.remove('filled'); });
+    document.querySelectorAll('input').forEach(i => { 
+        if (i.type === 'radio') i.checked = false;
+        else i.value = '';
+        i.classList.remove('filled'); 
+    });
     document.querySelectorAll('.highlight').forEach(hl => {
         const parent = hl.parentNode;
         while (hl.firstChild) parent.insertBefore(hl.firstChild, hl);
@@ -858,20 +958,25 @@ function clearAllData() {
     location.reload();
 }
 document.getElementById('clearAllBtn').addEventListener('click', clearAllData);
+
 document.addEventListener('DOMContentLoaded', () => {
     restoreNoteMarkers();
     
-    // Load saved answers
+    // Load saved answers — Q27–30 radio buttons
     for (let q = 27; q <= 30; q++) {
-        const box = document.getElementById(`ans${q}`);
         const saved = localStorage.getItem(`${STORAGE_KEY}_q${q}`) || '';
-        if (saved) { box.value = saved; box.classList.add('filled'); }
+        if (saved) {
+            const radio = document.querySelector(`input[name="q${q}"][value="${saved}"]`);
+            if (radio) radio.checked = true;
+        }
     }
+    // Q31–35
     for (let q = 31; q <= 35; q++) {
         const box = document.getElementById(`ans${q}`);
         const saved = localStorage.getItem(`${STORAGE_KEY}_q${q}`) || '';
         if (saved) { box.value = saved; box.classList.add('filled'); }
     }
+    // Q36–40
     for (let q = 36; q <= 40; q++) {
         const box = document.getElementById(`ans${q}`);
         const saved = localStorage.getItem(`${STORAGE_KEY}_q${q}`) || '';
